@@ -1,0 +1,34 @@
+{
+  "intents": [
+    {
+      "intent": "PlayTVIntent",
+      "slots":[
+        {
+          "name": "MediaName",
+          "type": "LITERAL"
+        }
+      ]
+    },
+    {
+      "intent": "PlayPandoraIntent",
+      "slots":[
+        {
+          "name": "MediaName",
+          "type": "LITERAL"
+        }
+      ]
+    },
+    {
+      "intent": "PlaySportsIntent",
+      "slots":[
+        {
+          "name": "MediaName",
+          "type": "LITERAL"
+        }
+      ]
+    },
+    {
+      "intent": "AMAZON.HelpIntent"
+    }
+  ]
+}
