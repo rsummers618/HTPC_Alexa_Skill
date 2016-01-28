@@ -4,7 +4,7 @@
 	<extension point="xbmc.addon.repository" name="Addons for Alexa">
 		<info compressed="false">http://raw.github.com/rsummers618/HTPC_Alexa_Skill/master/Kodi/addons.xml</info>
 		<checksum>http://raw.github.com/rsummers618/HTPC_Alexa_Skill/master/Kodi/addons.xml.md5</checksum>
-		<datadir zip="false">http://raw.github.com/rsummers618/HTPC_Alexa_Skill/master/Kodi</datadir>
+		<datadir zip="true">http://raw.githubusercontent.com/rsummers618/HTPC_Alexa_Skill/master/Kodi/zips</datadir>
 	</extension>
 	<extension point="xbmc.addon.metadata">
 		<summary>Repo for Rsummers618 Alexa-Kodi Skills</summary>
