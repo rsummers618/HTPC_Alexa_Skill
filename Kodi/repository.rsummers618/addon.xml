@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="repository.rsummers618" name="Alexa Addons" version="1.0" provider-name="rsummers618">
+	<extension point="xbmc.addon.repository" name="Addons for Alexa">
+		<info compressed="false">http://raw.github.com/rsummers618/HTPC_Alexa_Skill/master/Kodi/addons.xml</info>
+		<checksum>http://raw.github.com/rsummers618/HTPC_Alexa_Skill/master/Kodi/addons.xml.md5</checksum>
+		<datadir zip="false">http://raw.github.com/rsummers618/HTPC_Alexa_Skill/master/Kodi</datadir>
+	</extension>
+	<extension point="xbmc.addon.metadata">
+		<summary>Repo for Rsummers618 Alexa-Kodi Skills</summary>
+		<description>Download and install Alexa Kodi Skills</description>
+		<platform>all</platform>
+	</extension>
+</addon>

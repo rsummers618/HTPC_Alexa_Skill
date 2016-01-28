@@ -1,0 +1,240 @@
+GetKeyIntent for code
+GetKeyIntent for key
+GetKeyIntent for my code
+GetKeyIntent for my key
+GetKeyIntent for my password
+GetKeyIntent for password
+GetKeyIntent for the code
+GetKeyIntent for the key
+GetKeyIntent for the password
+NewEpisodesIntent What are my new episodes
+NewEpisodesIntent What are my new episodes are
+NewEpisodesIntent What are my new episodes are of {Shawshank Redemption|ShowName}
+NewEpisodesIntent What are my new episodes are of {breaking bad|ShowName}
+NewEpisodesIntent What are my new episodes are of {parks and recreation|ShowName}
+NewEpisodesIntent What are my new episodes are of {sherlock|ShowName}
+NewEpisodesIntent What are my new episodes of {Shawshank Redemption|ShowName}
+NewEpisodesIntent What are my new episodes of {breaking bad|ShowName}
+NewEpisodesIntent What are my new episodes of {parks and recreation|ShowName}
+NewEpisodesIntent What are my new episodes of {sherlock|ShowName}
+NewEpisodesIntent What are my new show
+NewEpisodesIntent What are my new show are
+NewEpisodesIntent What are my new show are of {Shawshank Redemption|ShowName}
+NewEpisodesIntent What are my new show are of {breaking bad|ShowName}
+NewEpisodesIntent What are my new show are of {parks and recreation|ShowName}
+NewEpisodesIntent What are my new show are of {sherlock|ShowName}
+NewEpisodesIntent What are my new show of {Shawshank Redemption|ShowName}
+NewEpisodesIntent What are my new show of {breaking bad|ShowName}
+NewEpisodesIntent What are my new show of {parks and recreation|ShowName}
+NewEpisodesIntent What are my new show of {sherlock|ShowName}
+NewEpisodesIntent What are my new shows
+NewEpisodesIntent What are my new shows are
+NewEpisodesIntent What are my new shows are of {Shawshank Redemption|ShowName}
+NewEpisodesIntent What are my new shows are of {breaking bad|ShowName}
+NewEpisodesIntent What are my new shows are of {parks and recreation|ShowName}
+NewEpisodesIntent What are my new shows are of {sherlock|ShowName}
+NewEpisodesIntent What are my new shows of {Shawshank Redemption|ShowName}
+NewEpisodesIntent What are my new shows of {breaking bad|ShowName}
+NewEpisodesIntent What are my new shows of {parks and recreation|ShowName}
+NewEpisodesIntent What are my new shows of {sherlock|ShowName}
+NewEpisodesIntent What my new episodes
+NewEpisodesIntent What my new episodes are
+NewEpisodesIntent What my new episodes are of {Shawshank Redemption|ShowName}
+NewEpisodesIntent What my new episodes are of {breaking bad|ShowName}
+NewEpisodesIntent What my new episodes are of {parks and recreation|ShowName}
+NewEpisodesIntent What my new episodes are of {sherlock|ShowName}
+NewEpisodesIntent What my new episodes of {Shawshank Redemption|ShowName}
+NewEpisodesIntent What my new episodes of {breaking bad|ShowName}
+NewEpisodesIntent What my new episodes of {parks and recreation|ShowName}
+NewEpisodesIntent What my new episodes of {sherlock|ShowName}
+NewEpisodesIntent What my new show
+NewEpisodesIntent What my new show are
+NewEpisodesIntent What my new show are of {Shawshank Redemption|ShowName}
+NewEpisodesIntent What my new show are of {breaking bad|ShowName}
+NewEpisodesIntent What my new show are of {parks and recreation|ShowName}
+NewEpisodesIntent What my new show are of {sherlock|ShowName}
+NewEpisodesIntent What my new show of {Shawshank Redemption|ShowName}
+NewEpisodesIntent What my new show of {breaking bad|ShowName}
+NewEpisodesIntent What my new show of {parks and recreation|ShowName}
+NewEpisodesIntent What my new show of {sherlock|ShowName}
+NewEpisodesIntent What my new shows
+NewEpisodesIntent What my new shows are
+NewEpisodesIntent What my new shows are of {Shawshank Redemption|ShowName}
+NewEpisodesIntent What my new shows are of {breaking bad|ShowName}
+NewEpisodesIntent What my new shows are of {parks and recreation|ShowName}
+NewEpisodesIntent What my new shows are of {sherlock|ShowName}
+NewEpisodesIntent What my new shows of {Shawshank Redemption|ShowName}
+NewEpisodesIntent What my new shows of {breaking bad|ShowName}
+NewEpisodesIntent What my new shows of {parks and recreation|ShowName}
+NewEpisodesIntent What my new shows of {sherlock|ShowName}
+PausePlayIntent pause
+PausePlayIntent play
+PausePlayIntent start
+PlaySportsIntent play the {Red Wings|MediaName} game
+PlaySportsIntent play the {Red Wings|MediaName} match
+PlaySportsIntent play the {Toronto Blue Jays|MediaName} game
+PlaySportsIntent play the {Toronto Blue Jays|MediaName} match
+PlaySportsIntent play the {UCLA|MediaName} game
+PlaySportsIntent play the {UCLA|MediaName} match
+PlaySportsIntent play the {ducks|MediaName} game
+PlaySportsIntent play the {ducks|MediaName} match
+PlaySportsIntent show the {Red Wings|MediaName} game
+PlaySportsIntent show the {Red Wings|MediaName} match
+PlaySportsIntent show the {Toronto Blue Jays|MediaName} game
+PlaySportsIntent show the {Toronto Blue Jays|MediaName} match
+PlaySportsIntent show the {UCLA|MediaName} game
+PlaySportsIntent show the {UCLA|MediaName} match
+PlaySportsIntent show the {ducks|MediaName} game
+PlaySportsIntent show the {ducks|MediaName} match
+PlaySportsIntent to play the {Red Wings|MediaName} game
+PlaySportsIntent to play the {Red Wings|MediaName} match
+PlaySportsIntent to play the {Toronto Blue Jays|MediaName} game
+PlaySportsIntent to play the {Toronto Blue Jays|MediaName} match
+PlaySportsIntent to play the {UCLA|MediaName} game
+PlaySportsIntent to play the {UCLA|MediaName} match
+PlaySportsIntent to play the {ducks|MediaName} game
+PlaySportsIntent to play the {ducks|MediaName} match
+PlaySportsIntent to show the {Red Wings|MediaName} game
+PlaySportsIntent to show the {Red Wings|MediaName} match
+PlaySportsIntent to show the {Toronto Blue Jays|MediaName} game
+PlaySportsIntent to show the {Toronto Blue Jays|MediaName} match
+PlaySportsIntent to show the {UCLA|MediaName} game
+PlaySportsIntent to show the {UCLA|MediaName} match
+PlaySportsIntent to show the {ducks|MediaName} game
+PlaySportsIntent to show the {ducks|MediaName} match
+PlaySportsIntent to watch the {Red Wings|MediaName} game
+PlaySportsIntent to watch the {Red Wings|MediaName} match
+PlaySportsIntent to watch the {Toronto Blue Jays|MediaName} game
+PlaySportsIntent to watch the {Toronto Blue Jays|MediaName} match
+PlaySportsIntent to watch the {UCLA|MediaName} game
+PlaySportsIntent to watch the {UCLA|MediaName} match
+PlaySportsIntent to watch the {ducks|MediaName} game
+PlaySportsIntent to watch the {ducks|MediaName} match
+PlaySportsIntent watch the {Red Wings|MediaName} game
+PlaySportsIntent watch the {Red Wings|MediaName} match
+PlaySportsIntent watch the {Toronto Blue Jays|MediaName} game
+PlaySportsIntent watch the {Toronto Blue Jays|MediaName} match
+PlaySportsIntent watch the {UCLA|MediaName} game
+PlaySportsIntent watch the {UCLA|MediaName} match
+PlaySportsIntent watch the {ducks|MediaName} game
+PlaySportsIntent watch the {ducks|MediaName} match
+PlayTVIntent play Season {SeasonNum} Episode {EpisodeNum} of {Shawshank Redemption|MediaName}
+PlayTVIntent play Season {SeasonNum} Episode {EpisodeNum} of {breaking bad|MediaName}
+PlayTVIntent play Season {SeasonNum} Episode {EpisodeNum} of {parks and recreation|MediaName}
+PlayTVIntent play Season {SeasonNum} Episode {EpisodeNum} of {sherlock|MediaName}
+PlayTVIntent play Season {SeasonNum} of {Shawshank Redemption|MediaName}
+PlayTVIntent play Season {SeasonNum} of {breaking bad|MediaName}
+PlayTVIntent play Season {SeasonNum} of {parks and recreation|MediaName}
+PlayTVIntent play Season {SeasonNum} of {sherlock|MediaName}
+PlayTVIntent play {Shawshank Redemption|MediaName}
+PlayTVIntent play {Shawshank Redemption|MediaName} Season {SeasonNum}
+PlayTVIntent play {Shawshank Redemption|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent play {breaking bad|MediaName}
+PlayTVIntent play {breaking bad|MediaName} Season {SeasonNum}
+PlayTVIntent play {breaking bad|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent play {parks and recreation|MediaName}
+PlayTVIntent play {parks and recreation|MediaName} Season {SeasonNum}
+PlayTVIntent play {parks and recreation|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent play {sherlock|MediaName}
+PlayTVIntent play {sherlock|MediaName} Season {SeasonNum}
+PlayTVIntent play {sherlock|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent show Season {SeasonNum} Episode {EpisodeNum} of {Shawshank Redemption|MediaName}
+PlayTVIntent show Season {SeasonNum} Episode {EpisodeNum} of {breaking bad|MediaName}
+PlayTVIntent show Season {SeasonNum} Episode {EpisodeNum} of {parks and recreation|MediaName}
+PlayTVIntent show Season {SeasonNum} Episode {EpisodeNum} of {sherlock|MediaName}
+PlayTVIntent show Season {SeasonNum} of {Shawshank Redemption|MediaName}
+PlayTVIntent show Season {SeasonNum} of {breaking bad|MediaName}
+PlayTVIntent show Season {SeasonNum} of {parks and recreation|MediaName}
+PlayTVIntent show Season {SeasonNum} of {sherlock|MediaName}
+PlayTVIntent show {Shawshank Redemption|MediaName}
+PlayTVIntent show {Shawshank Redemption|MediaName} Season {SeasonNum}
+PlayTVIntent show {Shawshank Redemption|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent show {breaking bad|MediaName}
+PlayTVIntent show {breaking bad|MediaName} Season {SeasonNum}
+PlayTVIntent show {breaking bad|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent show {parks and recreation|MediaName}
+PlayTVIntent show {parks and recreation|MediaName} Season {SeasonNum}
+PlayTVIntent show {parks and recreation|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent show {sherlock|MediaName}
+PlayTVIntent show {sherlock|MediaName} Season {SeasonNum}
+PlayTVIntent show {sherlock|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent to play Season {SeasonNum} Episode {EpisodeNum} of {Shawshank Redemption|MediaName}
+PlayTVIntent to play Season {SeasonNum} Episode {EpisodeNum} of {breaking bad|MediaName}
+PlayTVIntent to play Season {SeasonNum} Episode {EpisodeNum} of {parks and recreation|MediaName}
+PlayTVIntent to play Season {SeasonNum} Episode {EpisodeNum} of {sherlock|MediaName}
+PlayTVIntent to play Season {SeasonNum} of {Shawshank Redemption|MediaName}
+PlayTVIntent to play Season {SeasonNum} of {breaking bad|MediaName}
+PlayTVIntent to play Season {SeasonNum} of {parks and recreation|MediaName}
+PlayTVIntent to play Season {SeasonNum} of {sherlock|MediaName}
+PlayTVIntent to play {Shawshank Redemption|MediaName}
+PlayTVIntent to play {Shawshank Redemption|MediaName} Season {SeasonNum}
+PlayTVIntent to play {Shawshank Redemption|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent to play {breaking bad|MediaName}
+PlayTVIntent to play {breaking bad|MediaName} Season {SeasonNum}
+PlayTVIntent to play {breaking bad|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent to play {parks and recreation|MediaName}
+PlayTVIntent to play {parks and recreation|MediaName} Season {SeasonNum}
+PlayTVIntent to play {parks and recreation|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent to play {sherlock|MediaName}
+PlayTVIntent to play {sherlock|MediaName} Season {SeasonNum}
+PlayTVIntent to play {sherlock|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent to show Season {SeasonNum} Episode {EpisodeNum} of {Shawshank Redemption|MediaName}
+PlayTVIntent to show Season {SeasonNum} Episode {EpisodeNum} of {breaking bad|MediaName}
+PlayTVIntent to show Season {SeasonNum} Episode {EpisodeNum} of {parks and recreation|MediaName}
+PlayTVIntent to show Season {SeasonNum} Episode {EpisodeNum} of {sherlock|MediaName}
+PlayTVIntent to show Season {SeasonNum} of {Shawshank Redemption|MediaName}
+PlayTVIntent to show Season {SeasonNum} of {breaking bad|MediaName}
+PlayTVIntent to show Season {SeasonNum} of {parks and recreation|MediaName}
+PlayTVIntent to show Season {SeasonNum} of {sherlock|MediaName}
+PlayTVIntent to show {Shawshank Redemption|MediaName}
+PlayTVIntent to show {Shawshank Redemption|MediaName} Season {SeasonNum}
+PlayTVIntent to show {Shawshank Redemption|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent to show {breaking bad|MediaName}
+PlayTVIntent to show {breaking bad|MediaName} Season {SeasonNum}
+PlayTVIntent to show {breaking bad|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent to show {parks and recreation|MediaName}
+PlayTVIntent to show {parks and recreation|MediaName} Season {SeasonNum}
+PlayTVIntent to show {parks and recreation|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent to show {sherlock|MediaName}
+PlayTVIntent to show {sherlock|MediaName} Season {SeasonNum}
+PlayTVIntent to show {sherlock|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent to watch Season {SeasonNum} Episode {EpisodeNum} of {Shawshank Redemption|MediaName}
+PlayTVIntent to watch Season {SeasonNum} Episode {EpisodeNum} of {breaking bad|MediaName}
+PlayTVIntent to watch Season {SeasonNum} Episode {EpisodeNum} of {parks and recreation|MediaName}
+PlayTVIntent to watch Season {SeasonNum} Episode {EpisodeNum} of {sherlock|MediaName}
+PlayTVIntent to watch Season {SeasonNum} of {Shawshank Redemption|MediaName}
+PlayTVIntent to watch Season {SeasonNum} of {breaking bad|MediaName}
+PlayTVIntent to watch Season {SeasonNum} of {parks and recreation|MediaName}
+PlayTVIntent to watch Season {SeasonNum} of {sherlock|MediaName}
+PlayTVIntent to watch {Shawshank Redemption|MediaName}
+PlayTVIntent to watch {Shawshank Redemption|MediaName} Season {SeasonNum}
+PlayTVIntent to watch {Shawshank Redemption|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent to watch {breaking bad|MediaName}
+PlayTVIntent to watch {breaking bad|MediaName} Season {SeasonNum}
+PlayTVIntent to watch {breaking bad|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent to watch {parks and recreation|MediaName}
+PlayTVIntent to watch {parks and recreation|MediaName} Season {SeasonNum}
+PlayTVIntent to watch {parks and recreation|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent to watch {sherlock|MediaName}
+PlayTVIntent to watch {sherlock|MediaName} Season {SeasonNum}
+PlayTVIntent to watch {sherlock|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent watch Season {SeasonNum} Episode {EpisodeNum} of {Shawshank Redemption|MediaName}
+PlayTVIntent watch Season {SeasonNum} Episode {EpisodeNum} of {breaking bad|MediaName}
+PlayTVIntent watch Season {SeasonNum} Episode {EpisodeNum} of {parks and recreation|MediaName}
+PlayTVIntent watch Season {SeasonNum} Episode {EpisodeNum} of {sherlock|MediaName}
+PlayTVIntent watch Season {SeasonNum} of {Shawshank Redemption|MediaName}
+PlayTVIntent watch Season {SeasonNum} of {breaking bad|MediaName}
+PlayTVIntent watch Season {SeasonNum} of {parks and recreation|MediaName}
+PlayTVIntent watch Season {SeasonNum} of {sherlock|MediaName}
+PlayTVIntent watch {Shawshank Redemption|MediaName}
+PlayTVIntent watch {Shawshank Redemption|MediaName} Season {SeasonNum}
+PlayTVIntent watch {Shawshank Redemption|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent watch {breaking bad|MediaName}
+PlayTVIntent watch {breaking bad|MediaName} Season {SeasonNum}
+PlayTVIntent watch {breaking bad|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent watch {parks and recreation|MediaName}
+PlayTVIntent watch {parks and recreation|MediaName} Season {SeasonNum}
+PlayTVIntent watch {parks and recreation|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent watch {sherlock|MediaName}
+PlayTVIntent watch {sherlock|MediaName} Season {SeasonNum}
+PlayTVIntent watch {sherlock|MediaName} Season {SeasonNum} Episode {EpisodeNum}

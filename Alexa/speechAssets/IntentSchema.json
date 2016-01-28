@@ -1,0 +1,60 @@
+{
+  "intents": [
+    {
+      "intent": "PlayTVIntent",
+      "slots":[
+        {
+          "name": "MediaName",
+          "type": "LITERAL"
+        },
+        {
+          "name": "SeasonNum",
+          "type": "AMAZON.NUMBER"
+        },
+        {
+          "name": "EpisodeNum",
+          "type": "AMAZON.NUMBER"
+        }
+      ]
+    },
+    {
+      "intent": "PlayPandoraIntent",
+      "slots":[
+        {
+          "name": "MediaName",
+          "type": "LITERAL"
+        }
+      ]
+    },
+    {
+      "intent": "PlaySportsIntent",
+      "slots":[
+        {
+          "name": "MediaName",
+          "type": "LITERAL"
+        }
+      ]
+    },
+    {
+      "intent": "GetKeyIntent"
+    },
+    {
+      "intent": "NewEpisodesIntent",
+      "slots":[
+        {
+          "name": "ShowName",
+          "type": "LITERAL"
+        }
+      ]
+    },
+    {
+      "intent": "PausePlayIntent"
+    },
+    {
+      "intent": "ExitIntent"
+    },
+    {
+      "intent": "AMAZON.HelpIntent"
+    }
+  ]
+}

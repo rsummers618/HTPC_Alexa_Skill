@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="script.service.alexa" name="Alexa Plugin" version="0.0.1" provider-name="Ryan Summers">
+  <requires>
+    <import addon="xbmc.python" version="2.1.0"/>
+  </requires>
+  <extension point="xbmc.service" library="service.py" start="login"/>
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en_gb">Background service to allow Kodi to be controlled by your Amazon Echo</summary>
+    <description lang="en_gb">This script provides a backend that can be communicated to by the Alexa webservice.</description>
+    <disclaimer lang="en_gb"> This is in Alpha stage</disclaimer>
+    <language></language>
+    <platform>all</platform>
+    <license></license>
+    <forum></forum>
+    <website></website>
+    <email></email>
+    <source></source>
+  </extension>
+</addon>
