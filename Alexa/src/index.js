@@ -271,7 +271,6 @@ PlayTV.prototype.intentHandlers = {
     
     "PlayTVIntent": function (intent, session, response) {
         queue_id = session.user.userId.substring(60) 
-        //queue_id = '2C6475NGCLL2QJVY'
         console.log("PlayTVIntent")
         
         console.time("omdb")
