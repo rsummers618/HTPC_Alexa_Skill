@@ -1,12 +1,12 @@
 GetKeyIntent (/for) (/the/my) (code/key/password)
-PlayTVIntent (/to) (play/watch/show) {(breaking bad/parks and recreation/sherlock/Shawshank Redemption)|MediaName}
-PlayTVIntent (/to) (play/watch/show) {(breaking bad/parks and recreation/sherlock/Shawshank Redemption)|MediaName} Season {SeasonNum}
-PlayTVIntent (/to) (play/watch/show) {(breaking bad/parks and recreation/sherlock/Shawshank Redemption)|MediaName} Season {SeasonNum} Episode {EpisodeNum}
-PlayTVIntent (/to) (play/watch/show)  Season {SeasonNum}  of {(breaking bad/parks and recreation/sherlock/Shawshank Redemption)|MediaName}
-PlayTVIntent (/to) (play/watch/show)  Season {SeasonNum} Episode {EpisodeNum}  of {(breaking bad/parks and recreation/sherlock/Shawshank Redemption)|MediaName}
+PlayTVIntent (/to) (play/watch/show) {(breaking bad/parks and recreation/sherlock/Shawshank Redemptio/The Walking Deadn)|MediaName}
+PlayTVIntent (/to) (play/watch/show) {(breaking bad/parks and recreation/sherlock/Shawshank Redemption/The Walking Dead)|MediaName} Season {SeasonNum}
+PlayTVIntent (/to) (play/watch/show) {(breaking bad/parks and recreation/sherlock/Shawshank Redemption/The Walking Dead)|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent (/to) (play/watch/show)  Season {SeasonNum}  of {(breaking bad/parks and recreation/sherlock/Shawshank Redemption/The Walking Dead)|MediaName}
+PlayTVIntent (/to) (play/watch/show)  Season {SeasonNum} Episode {EpisodeNum}  of {(breaking bad/parks and recreation/sherlock/Shawshank Redemption/The Walking Dead)|MediaName}
 PausePlayIntent (pause/play/start/resume)
-NewEpisodesIntent What (/are) my new (show/shows/episodes) (/are) (/of {(breaking bad/parks and recreation/sherlock/Shawshank Redemption)|ShowName})
+NewEpisodesIntent What (/are) my new (show/shows/episodes) (/are) (/of {(breaking bad/parks and recreation/sherlock/Shawshank Redemption/The Walking Dead)|ShowName})
 PlaySportsIntent (/to) (show/play/watch) the {(ducks/Red Wings/UCLA/Toronto Blue Jays)|MediaName} (game/match)
-NavigateIntent (/to) (navigate/move/go (/to)) {(home/up/down/left/videos/movies)|NavLocation)}
-OpenAddonInent (open/launch/play) (/{(Netflix/Formula One/Videos)|Directory} (with/on/in) ) {(Pulsar/pandki/pandora/NBC sports)|AddonName}
+NavigateIntent (/to) (navigate/move/go (/to)) {(home/up/down/left/videos/movies)|NavLocation}
+OpenAddonIntent (open/launch/play) (/{(Netflix/Formula One/Videos)|Directory} (with/on/in) ) {(Pulsar/pandki/pandora/NBC sports)|AddonName}
 StopIntent (cancel/stop)

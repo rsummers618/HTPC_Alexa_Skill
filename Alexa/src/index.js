@@ -13,6 +13,7 @@ var AWSSercretAcccessKey = secret.API_KEYS.AWSSercretAcccessKey
 var AWSAccessKeyId = secret.API_KEYS.AWSAccessKeyId
 var AWSRegion = secret.API_KEYS.AWSRegion
 var TVDBAPI = secret.API_KEYS.TVDBAPI
+var SnoocoreKey = secret.API_KEYS.Snoocore
 
 
 
@@ -60,7 +61,6 @@ var AlexaSkill = require('./AlexaSkill');
  * PlayTV is a child of AlexaSkill.
  * To read more about inheritance in JavaScript, see the link below.
  *
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Introduction_to_Object-Oriented_JavaScript#Inheritance
  */
 var PlayTV = function () {
     AlexaSkill.call(this, APP_ID);
@@ -106,7 +106,7 @@ function CreateQueue(queue_id,read,callback){
                    "Principal": {
                         "AWS": "*"
                     },
-                    "Action": ["sqs:SendMessage","sqs:DeleteMessage","sqs:PurgeQueue","sqs:GetQueueUrl"],
+                    "Action": ["sqs:SendMessage"],
                     "Resource": "arn:aws:sqs:"+AWSRegion+":"+AWSAccountIds+":"+queue_id
                 }
             }
@@ -122,7 +122,7 @@ function CreateQueue(queue_id,read,callback){
                    "Principal": {
                         "AWS": "*"
                     },
-                    "Action": ["sqs:ReceiveMessage","sqs:DeleteMessage","sqs:PurgeQueue","sqs:GetQueueUrl"],
+                    "Action": ["sqs:ReceiveMessage","sqs:DeleteMessage","sqs:PurgeQueue"],
                     "Resource": "arn:aws:sqs:"+AWSRegion+":"+AWSAccountIds+":"+queue_id
                 }
         
@@ -175,7 +175,34 @@ function CreateQueues(queue_id,callback){
 
 
 function SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,callback){
-     SendMessage(queue_id,message_body,message_attributes,function(err,ret){
+
+    var params_rcv = {
+                MaxNumberOfMessages : 5,
+                QueueUrl: 'https://sqs.'+AWSRegion+'.amazonaws.com/'+AWSAccountIds+'/'+queue_id+'_r', 
+                WaitTimeSeconds : 0,
+                MessageAttributeNames: ['All'],
+                VisibilityTimeout: 3
+            };
+    //console.log("waiting for message resonse")
+    sqs.receiveMessage(params_rcv,function(err,data){
+        if (err)
+            console.error(err)
+        if (data.Messages){
+            for (i = 0; i < data.Messages.length; i ++){
+                console.log("Extra Message")
+                console.log(data.Messages[i])
+                sqs.deleteMessage({QueueUrl:'https://sqs.'+AWSRegion+'.amazonaws.com/'+AWSAccountIds+'/'+queue_id+'_r',ReceiptHandle:data.Messages[i].ReceiptHandle},function(err,del){
+                    if(err)console.log(err,err.stack)
+                    else{
+                        console.log("deleted extra message")
+                    }
+                                
+                });
+            }
+        }
+    });
+
+    SendMessage(queue_id,message_body,message_attributes,function(err,ret){
         if (err) console.log(err,err.stack);
         else{
             var params = {
@@ -306,6 +333,9 @@ PlayTV.prototype.intentHandlers = {
                     if (error){
                         response.tellWithCard(title + " " + err, "TV player", err);
                     }
+                    if (!res){
+                        response.tellWithCard("Couldn't Contact TVDB, try again later", "TV player", "Error contacting TVDB");
+                    }
                     
                     
                 
@@ -343,7 +373,7 @@ PlayTV.prototype.intentHandlers = {
                             response.tellWithCard(title + " " + err, "TV player", err);
                         }
                         console.timeEnd("tvdbepisodes")
-                        console.log(res)
+                        //console.log(res)
                         found = false
                         for (i = 0; i < res.length;i ++){
                             episode =  res[i]
@@ -512,6 +542,30 @@ PlayTV.prototype.intentHandlers = {
     
     },
     
+    "NavigateIntent": function (intent, session, response) {
+        queue_id = session.user.userId.substring(60)
+        
+         message_attributes = {
+            nav: {
+                DataType: 'String',
+                StringValue: intent.slots.NavLocation.value
+            }
+        }
+                
+        message_body = "PausePlay"
+        
+        SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){  
+            if (err){
+                response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
+                return console.error(err.message);
+            }
+            response.tellWithCard(res.Messages[0].MessageAttributes.voice.StringValue,"TV Player",res.Messages[0].MessageAttributes.card.StringValue);
+            
+
+        });
+    
+    },
+    
     "OpenAddonIntent": function (intent, session, response) {
         
         response.tellWithCard("Opening addons is not yet implemented","TV Player","Not yet implemented");
@@ -552,7 +606,7 @@ PlayTV.prototype.intentHandlers = {
             throttle: 0,
             oauth: {
                 type: 'implicit',
-                key: 'VqhNmheQrdsnlg',
+                key: SnoocoreKey,
                 redirectUri: 'http://localhost:3000',
                 scope: [ 'read' ]
             }

@@ -1,3 +1,4 @@
+GetKeyIntent code
 GetKeyIntent for code
 GetKeyIntent for key
 GetKeyIntent for my code
@@ -7,68 +8,257 @@ GetKeyIntent for password
 GetKeyIntent for the code
 GetKeyIntent for the key
 GetKeyIntent for the password
+GetKeyIntent key
+GetKeyIntent my code
+GetKeyIntent my key
+GetKeyIntent my password
+GetKeyIntent password
+GetKeyIntent the code
+GetKeyIntent the key
+GetKeyIntent the password
+NavigateIntent go to {down|NavLocation}
+NavigateIntent go to {home|NavLocation}
+NavigateIntent go to {left|NavLocation}
+NavigateIntent go to {movies|NavLocation}
+NavigateIntent go to {up|NavLocation}
+NavigateIntent go to {videos|NavLocation}
+NavigateIntent go {down|NavLocation}
+NavigateIntent go {home|NavLocation}
+NavigateIntent go {left|NavLocation}
+NavigateIntent go {movies|NavLocation}
+NavigateIntent go {up|NavLocation}
+NavigateIntent go {videos|NavLocation}
+NavigateIntent move {down|NavLocation}
+NavigateIntent move {home|NavLocation}
+NavigateIntent move {left|NavLocation}
+NavigateIntent move {movies|NavLocation}
+NavigateIntent move {up|NavLocation}
+NavigateIntent move {videos|NavLocation}
+NavigateIntent navigate {down|NavLocation}
+NavigateIntent navigate {home|NavLocation}
+NavigateIntent navigate {left|NavLocation}
+NavigateIntent navigate {movies|NavLocation}
+NavigateIntent navigate {up|NavLocation}
+NavigateIntent navigate {videos|NavLocation}
+NavigateIntent to go to {down|NavLocation}
+NavigateIntent to go to {home|NavLocation}
+NavigateIntent to go to {left|NavLocation}
+NavigateIntent to go to {movies|NavLocation}
+NavigateIntent to go to {up|NavLocation}
+NavigateIntent to go to {videos|NavLocation}
+NavigateIntent to go {down|NavLocation}
+NavigateIntent to go {home|NavLocation}
+NavigateIntent to go {left|NavLocation}
+NavigateIntent to go {movies|NavLocation}
+NavigateIntent to go {up|NavLocation}
+NavigateIntent to go {videos|NavLocation}
+NavigateIntent to move {down|NavLocation}
+NavigateIntent to move {home|NavLocation}
+NavigateIntent to move {left|NavLocation}
+NavigateIntent to move {movies|NavLocation}
+NavigateIntent to move {up|NavLocation}
+NavigateIntent to move {videos|NavLocation}
+NavigateIntent to navigate {down|NavLocation}
+NavigateIntent to navigate {home|NavLocation}
+NavigateIntent to navigate {left|NavLocation}
+NavigateIntent to navigate {movies|NavLocation}
+NavigateIntent to navigate {up|NavLocation}
+NavigateIntent to navigate {videos|NavLocation}
 NewEpisodesIntent What are my new episodes
 NewEpisodesIntent What are my new episodes are
 NewEpisodesIntent What are my new episodes are of {Shawshank Redemption|ShowName}
+NewEpisodesIntent What are my new episodes are of {The Walking Dead|ShowName}
 NewEpisodesIntent What are my new episodes are of {breaking bad|ShowName}
 NewEpisodesIntent What are my new episodes are of {parks and recreation|ShowName}
 NewEpisodesIntent What are my new episodes are of {sherlock|ShowName}
 NewEpisodesIntent What are my new episodes of {Shawshank Redemption|ShowName}
+NewEpisodesIntent What are my new episodes of {The Walking Dead|ShowName}
 NewEpisodesIntent What are my new episodes of {breaking bad|ShowName}
 NewEpisodesIntent What are my new episodes of {parks and recreation|ShowName}
 NewEpisodesIntent What are my new episodes of {sherlock|ShowName}
 NewEpisodesIntent What are my new show
 NewEpisodesIntent What are my new show are
 NewEpisodesIntent What are my new show are of {Shawshank Redemption|ShowName}
+NewEpisodesIntent What are my new show are of {The Walking Dead|ShowName}
 NewEpisodesIntent What are my new show are of {breaking bad|ShowName}
 NewEpisodesIntent What are my new show are of {parks and recreation|ShowName}
 NewEpisodesIntent What are my new show are of {sherlock|ShowName}
 NewEpisodesIntent What are my new show of {Shawshank Redemption|ShowName}
+NewEpisodesIntent What are my new show of {The Walking Dead|ShowName}
 NewEpisodesIntent What are my new show of {breaking bad|ShowName}
 NewEpisodesIntent What are my new show of {parks and recreation|ShowName}
 NewEpisodesIntent What are my new show of {sherlock|ShowName}
 NewEpisodesIntent What are my new shows
 NewEpisodesIntent What are my new shows are
 NewEpisodesIntent What are my new shows are of {Shawshank Redemption|ShowName}
+NewEpisodesIntent What are my new shows are of {The Walking Dead|ShowName}
 NewEpisodesIntent What are my new shows are of {breaking bad|ShowName}
 NewEpisodesIntent What are my new shows are of {parks and recreation|ShowName}
 NewEpisodesIntent What are my new shows are of {sherlock|ShowName}
 NewEpisodesIntent What are my new shows of {Shawshank Redemption|ShowName}
+NewEpisodesIntent What are my new shows of {The Walking Dead|ShowName}
 NewEpisodesIntent What are my new shows of {breaking bad|ShowName}
 NewEpisodesIntent What are my new shows of {parks and recreation|ShowName}
 NewEpisodesIntent What are my new shows of {sherlock|ShowName}
 NewEpisodesIntent What my new episodes
 NewEpisodesIntent What my new episodes are
 NewEpisodesIntent What my new episodes are of {Shawshank Redemption|ShowName}
+NewEpisodesIntent What my new episodes are of {The Walking Dead|ShowName}
 NewEpisodesIntent What my new episodes are of {breaking bad|ShowName}
 NewEpisodesIntent What my new episodes are of {parks and recreation|ShowName}
 NewEpisodesIntent What my new episodes are of {sherlock|ShowName}
 NewEpisodesIntent What my new episodes of {Shawshank Redemption|ShowName}
+NewEpisodesIntent What my new episodes of {The Walking Dead|ShowName}
 NewEpisodesIntent What my new episodes of {breaking bad|ShowName}
 NewEpisodesIntent What my new episodes of {parks and recreation|ShowName}
 NewEpisodesIntent What my new episodes of {sherlock|ShowName}
 NewEpisodesIntent What my new show
 NewEpisodesIntent What my new show are
 NewEpisodesIntent What my new show are of {Shawshank Redemption|ShowName}
+NewEpisodesIntent What my new show are of {The Walking Dead|ShowName}
 NewEpisodesIntent What my new show are of {breaking bad|ShowName}
 NewEpisodesIntent What my new show are of {parks and recreation|ShowName}
 NewEpisodesIntent What my new show are of {sherlock|ShowName}
 NewEpisodesIntent What my new show of {Shawshank Redemption|ShowName}
+NewEpisodesIntent What my new show of {The Walking Dead|ShowName}
 NewEpisodesIntent What my new show of {breaking bad|ShowName}
 NewEpisodesIntent What my new show of {parks and recreation|ShowName}
 NewEpisodesIntent What my new show of {sherlock|ShowName}
 NewEpisodesIntent What my new shows
 NewEpisodesIntent What my new shows are
 NewEpisodesIntent What my new shows are of {Shawshank Redemption|ShowName}
+NewEpisodesIntent What my new shows are of {The Walking Dead|ShowName}
 NewEpisodesIntent What my new shows are of {breaking bad|ShowName}
 NewEpisodesIntent What my new shows are of {parks and recreation|ShowName}
 NewEpisodesIntent What my new shows are of {sherlock|ShowName}
 NewEpisodesIntent What my new shows of {Shawshank Redemption|ShowName}
+NewEpisodesIntent What my new shows of {The Walking Dead|ShowName}
 NewEpisodesIntent What my new shows of {breaking bad|ShowName}
 NewEpisodesIntent What my new shows of {parks and recreation|ShowName}
 NewEpisodesIntent What my new shows of {sherlock|ShowName}
+OpenAddonIntent launch {Formula One|Directory} in {NBC sports|AddonName}
+OpenAddonIntent launch {Formula One|Directory} in {Pulsar|AddonName}
+OpenAddonIntent launch {Formula One|Directory} in {pandki|AddonName}
+OpenAddonIntent launch {Formula One|Directory} in {pandora|AddonName}
+OpenAddonIntent launch {Formula One|Directory} on {NBC sports|AddonName}
+OpenAddonIntent launch {Formula One|Directory} on {Pulsar|AddonName}
+OpenAddonIntent launch {Formula One|Directory} on {pandki|AddonName}
+OpenAddonIntent launch {Formula One|Directory} on {pandora|AddonName}
+OpenAddonIntent launch {Formula One|Directory} with {NBC sports|AddonName}
+OpenAddonIntent launch {Formula One|Directory} with {Pulsar|AddonName}
+OpenAddonIntent launch {Formula One|Directory} with {pandki|AddonName}
+OpenAddonIntent launch {Formula One|Directory} with {pandora|AddonName}
+OpenAddonIntent launch {NBC sports|AddonName}
+OpenAddonIntent launch {Netflix|Directory} in {NBC sports|AddonName}
+OpenAddonIntent launch {Netflix|Directory} in {Pulsar|AddonName}
+OpenAddonIntent launch {Netflix|Directory} in {pandki|AddonName}
+OpenAddonIntent launch {Netflix|Directory} in {pandora|AddonName}
+OpenAddonIntent launch {Netflix|Directory} on {NBC sports|AddonName}
+OpenAddonIntent launch {Netflix|Directory} on {Pulsar|AddonName}
+OpenAddonIntent launch {Netflix|Directory} on {pandki|AddonName}
+OpenAddonIntent launch {Netflix|Directory} on {pandora|AddonName}
+OpenAddonIntent launch {Netflix|Directory} with {NBC sports|AddonName}
+OpenAddonIntent launch {Netflix|Directory} with {Pulsar|AddonName}
+OpenAddonIntent launch {Netflix|Directory} with {pandki|AddonName}
+OpenAddonIntent launch {Netflix|Directory} with {pandora|AddonName}
+OpenAddonIntent launch {Pulsar|AddonName}
+OpenAddonIntent launch {Videos|Directory} in {NBC sports|AddonName}
+OpenAddonIntent launch {Videos|Directory} in {Pulsar|AddonName}
+OpenAddonIntent launch {Videos|Directory} in {pandki|AddonName}
+OpenAddonIntent launch {Videos|Directory} in {pandora|AddonName}
+OpenAddonIntent launch {Videos|Directory} on {NBC sports|AddonName}
+OpenAddonIntent launch {Videos|Directory} on {Pulsar|AddonName}
+OpenAddonIntent launch {Videos|Directory} on {pandki|AddonName}
+OpenAddonIntent launch {Videos|Directory} on {pandora|AddonName}
+OpenAddonIntent launch {Videos|Directory} with {NBC sports|AddonName}
+OpenAddonIntent launch {Videos|Directory} with {Pulsar|AddonName}
+OpenAddonIntent launch {Videos|Directory} with {pandki|AddonName}
+OpenAddonIntent launch {Videos|Directory} with {pandora|AddonName}
+OpenAddonIntent launch {pandki|AddonName}
+OpenAddonIntent launch {pandora|AddonName}
+OpenAddonIntent open {Formula One|Directory} in {NBC sports|AddonName}
+OpenAddonIntent open {Formula One|Directory} in {Pulsar|AddonName}
+OpenAddonIntent open {Formula One|Directory} in {pandki|AddonName}
+OpenAddonIntent open {Formula One|Directory} in {pandora|AddonName}
+OpenAddonIntent open {Formula One|Directory} on {NBC sports|AddonName}
+OpenAddonIntent open {Formula One|Directory} on {Pulsar|AddonName}
+OpenAddonIntent open {Formula One|Directory} on {pandki|AddonName}
+OpenAddonIntent open {Formula One|Directory} on {pandora|AddonName}
+OpenAddonIntent open {Formula One|Directory} with {NBC sports|AddonName}
+OpenAddonIntent open {Formula One|Directory} with {Pulsar|AddonName}
+OpenAddonIntent open {Formula One|Directory} with {pandki|AddonName}
+OpenAddonIntent open {Formula One|Directory} with {pandora|AddonName}
+OpenAddonIntent open {NBC sports|AddonName}
+OpenAddonIntent open {Netflix|Directory} in {NBC sports|AddonName}
+OpenAddonIntent open {Netflix|Directory} in {Pulsar|AddonName}
+OpenAddonIntent open {Netflix|Directory} in {pandki|AddonName}
+OpenAddonIntent open {Netflix|Directory} in {pandora|AddonName}
+OpenAddonIntent open {Netflix|Directory} on {NBC sports|AddonName}
+OpenAddonIntent open {Netflix|Directory} on {Pulsar|AddonName}
+OpenAddonIntent open {Netflix|Directory} on {pandki|AddonName}
+OpenAddonIntent open {Netflix|Directory} on {pandora|AddonName}
+OpenAddonIntent open {Netflix|Directory} with {NBC sports|AddonName}
+OpenAddonIntent open {Netflix|Directory} with {Pulsar|AddonName}
+OpenAddonIntent open {Netflix|Directory} with {pandki|AddonName}
+OpenAddonIntent open {Netflix|Directory} with {pandora|AddonName}
+OpenAddonIntent open {Pulsar|AddonName}
+OpenAddonIntent open {Videos|Directory} in {NBC sports|AddonName}
+OpenAddonIntent open {Videos|Directory} in {Pulsar|AddonName}
+OpenAddonIntent open {Videos|Directory} in {pandki|AddonName}
+OpenAddonIntent open {Videos|Directory} in {pandora|AddonName}
+OpenAddonIntent open {Videos|Directory} on {NBC sports|AddonName}
+OpenAddonIntent open {Videos|Directory} on {Pulsar|AddonName}
+OpenAddonIntent open {Videos|Directory} on {pandki|AddonName}
+OpenAddonIntent open {Videos|Directory} on {pandora|AddonName}
+OpenAddonIntent open {Videos|Directory} with {NBC sports|AddonName}
+OpenAddonIntent open {Videos|Directory} with {Pulsar|AddonName}
+OpenAddonIntent open {Videos|Directory} with {pandki|AddonName}
+OpenAddonIntent open {Videos|Directory} with {pandora|AddonName}
+OpenAddonIntent open {pandki|AddonName}
+OpenAddonIntent open {pandora|AddonName}
+OpenAddonIntent play {Formula One|Directory} in {NBC sports|AddonName}
+OpenAddonIntent play {Formula One|Directory} in {Pulsar|AddonName}
+OpenAddonIntent play {Formula One|Directory} in {pandki|AddonName}
+OpenAddonIntent play {Formula One|Directory} in {pandora|AddonName}
+OpenAddonIntent play {Formula One|Directory} on {NBC sports|AddonName}
+OpenAddonIntent play {Formula One|Directory} on {Pulsar|AddonName}
+OpenAddonIntent play {Formula One|Directory} on {pandki|AddonName}
+OpenAddonIntent play {Formula One|Directory} on {pandora|AddonName}
+OpenAddonIntent play {Formula One|Directory} with {NBC sports|AddonName}
+OpenAddonIntent play {Formula One|Directory} with {Pulsar|AddonName}
+OpenAddonIntent play {Formula One|Directory} with {pandki|AddonName}
+OpenAddonIntent play {Formula One|Directory} with {pandora|AddonName}
+OpenAddonIntent play {NBC sports|AddonName}
+OpenAddonIntent play {Netflix|Directory} in {NBC sports|AddonName}
+OpenAddonIntent play {Netflix|Directory} in {Pulsar|AddonName}
+OpenAddonIntent play {Netflix|Directory} in {pandki|AddonName}
+OpenAddonIntent play {Netflix|Directory} in {pandora|AddonName}
+OpenAddonIntent play {Netflix|Directory} on {NBC sports|AddonName}
+OpenAddonIntent play {Netflix|Directory} on {Pulsar|AddonName}
+OpenAddonIntent play {Netflix|Directory} on {pandki|AddonName}
+OpenAddonIntent play {Netflix|Directory} on {pandora|AddonName}
+OpenAddonIntent play {Netflix|Directory} with {NBC sports|AddonName}
+OpenAddonIntent play {Netflix|Directory} with {Pulsar|AddonName}
+OpenAddonIntent play {Netflix|Directory} with {pandki|AddonName}
+OpenAddonIntent play {Netflix|Directory} with {pandora|AddonName}
+OpenAddonIntent play {Pulsar|AddonName}
+OpenAddonIntent play {Videos|Directory} in {NBC sports|AddonName}
+OpenAddonIntent play {Videos|Directory} in {Pulsar|AddonName}
+OpenAddonIntent play {Videos|Directory} in {pandki|AddonName}
+OpenAddonIntent play {Videos|Directory} in {pandora|AddonName}
+OpenAddonIntent play {Videos|Directory} on {NBC sports|AddonName}
+OpenAddonIntent play {Videos|Directory} on {Pulsar|AddonName}
+OpenAddonIntent play {Videos|Directory} on {pandki|AddonName}
+OpenAddonIntent play {Videos|Directory} on {pandora|AddonName}
+OpenAddonIntent play {Videos|Directory} with {NBC sports|AddonName}
+OpenAddonIntent play {Videos|Directory} with {Pulsar|AddonName}
+OpenAddonIntent play {Videos|Directory} with {pandki|AddonName}
+OpenAddonIntent play {Videos|Directory} with {pandora|AddonName}
+OpenAddonIntent play {pandki|AddonName}
+OpenAddonIntent play {pandora|AddonName}
 PausePlayIntent pause
 PausePlayIntent play
+PausePlayIntent resume
 PausePlayIntent start
 PlaySportsIntent play the {Red Wings|MediaName} game
 PlaySportsIntent play the {Red Wings|MediaName} match
@@ -119,16 +309,21 @@ PlaySportsIntent watch the {UCLA|MediaName} match
 PlaySportsIntent watch the {ducks|MediaName} game
 PlaySportsIntent watch the {ducks|MediaName} match
 PlayTVIntent play Season {SeasonNum} Episode {EpisodeNum} of {Shawshank Redemption|MediaName}
+PlayTVIntent play Season {SeasonNum} Episode {EpisodeNum} of {The Walking Dead|MediaName}
 PlayTVIntent play Season {SeasonNum} Episode {EpisodeNum} of {breaking bad|MediaName}
 PlayTVIntent play Season {SeasonNum} Episode {EpisodeNum} of {parks and recreation|MediaName}
 PlayTVIntent play Season {SeasonNum} Episode {EpisodeNum} of {sherlock|MediaName}
 PlayTVIntent play Season {SeasonNum} of {Shawshank Redemption|MediaName}
+PlayTVIntent play Season {SeasonNum} of {The Walking Dead|MediaName}
 PlayTVIntent play Season {SeasonNum} of {breaking bad|MediaName}
 PlayTVIntent play Season {SeasonNum} of {parks and recreation|MediaName}
 PlayTVIntent play Season {SeasonNum} of {sherlock|MediaName}
-PlayTVIntent play {Shawshank Redemption|MediaName}
 PlayTVIntent play {Shawshank Redemption|MediaName} Season {SeasonNum}
 PlayTVIntent play {Shawshank Redemption|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent play {Shawshank Redemptio|MediaName}
+PlayTVIntent play {The Walking Deadn|MediaName}
+PlayTVIntent play {The Walking Dead|MediaName} Season {SeasonNum}
+PlayTVIntent play {The Walking Dead|MediaName} Season {SeasonNum} Episode {EpisodeNum}
 PlayTVIntent play {breaking bad|MediaName}
 PlayTVIntent play {breaking bad|MediaName} Season {SeasonNum}
 PlayTVIntent play {breaking bad|MediaName} Season {SeasonNum} Episode {EpisodeNum}
@@ -139,16 +334,21 @@ PlayTVIntent play {sherlock|MediaName}
 PlayTVIntent play {sherlock|MediaName} Season {SeasonNum}
 PlayTVIntent play {sherlock|MediaName} Season {SeasonNum} Episode {EpisodeNum}
 PlayTVIntent show Season {SeasonNum} Episode {EpisodeNum} of {Shawshank Redemption|MediaName}
+PlayTVIntent show Season {SeasonNum} Episode {EpisodeNum} of {The Walking Dead|MediaName}
 PlayTVIntent show Season {SeasonNum} Episode {EpisodeNum} of {breaking bad|MediaName}
 PlayTVIntent show Season {SeasonNum} Episode {EpisodeNum} of {parks and recreation|MediaName}
 PlayTVIntent show Season {SeasonNum} Episode {EpisodeNum} of {sherlock|MediaName}
 PlayTVIntent show Season {SeasonNum} of {Shawshank Redemption|MediaName}
+PlayTVIntent show Season {SeasonNum} of {The Walking Dead|MediaName}
 PlayTVIntent show Season {SeasonNum} of {breaking bad|MediaName}
 PlayTVIntent show Season {SeasonNum} of {parks and recreation|MediaName}
 PlayTVIntent show Season {SeasonNum} of {sherlock|MediaName}
-PlayTVIntent show {Shawshank Redemption|MediaName}
 PlayTVIntent show {Shawshank Redemption|MediaName} Season {SeasonNum}
 PlayTVIntent show {Shawshank Redemption|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent show {Shawshank Redemptio|MediaName}
+PlayTVIntent show {The Walking Deadn|MediaName}
+PlayTVIntent show {The Walking Dead|MediaName} Season {SeasonNum}
+PlayTVIntent show {The Walking Dead|MediaName} Season {SeasonNum} Episode {EpisodeNum}
 PlayTVIntent show {breaking bad|MediaName}
 PlayTVIntent show {breaking bad|MediaName} Season {SeasonNum}
 PlayTVIntent show {breaking bad|MediaName} Season {SeasonNum} Episode {EpisodeNum}
@@ -159,16 +359,21 @@ PlayTVIntent show {sherlock|MediaName}
 PlayTVIntent show {sherlock|MediaName} Season {SeasonNum}
 PlayTVIntent show {sherlock|MediaName} Season {SeasonNum} Episode {EpisodeNum}
 PlayTVIntent to play Season {SeasonNum} Episode {EpisodeNum} of {Shawshank Redemption|MediaName}
+PlayTVIntent to play Season {SeasonNum} Episode {EpisodeNum} of {The Walking Dead|MediaName}
 PlayTVIntent to play Season {SeasonNum} Episode {EpisodeNum} of {breaking bad|MediaName}
 PlayTVIntent to play Season {SeasonNum} Episode {EpisodeNum} of {parks and recreation|MediaName}
 PlayTVIntent to play Season {SeasonNum} Episode {EpisodeNum} of {sherlock|MediaName}
 PlayTVIntent to play Season {SeasonNum} of {Shawshank Redemption|MediaName}
+PlayTVIntent to play Season {SeasonNum} of {The Walking Dead|MediaName}
 PlayTVIntent to play Season {SeasonNum} of {breaking bad|MediaName}
 PlayTVIntent to play Season {SeasonNum} of {parks and recreation|MediaName}
 PlayTVIntent to play Season {SeasonNum} of {sherlock|MediaName}
-PlayTVIntent to play {Shawshank Redemption|MediaName}
 PlayTVIntent to play {Shawshank Redemption|MediaName} Season {SeasonNum}
 PlayTVIntent to play {Shawshank Redemption|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent to play {Shawshank Redemptio|MediaName}
+PlayTVIntent to play {The Walking Deadn|MediaName}
+PlayTVIntent to play {The Walking Dead|MediaName} Season {SeasonNum}
+PlayTVIntent to play {The Walking Dead|MediaName} Season {SeasonNum} Episode {EpisodeNum}
 PlayTVIntent to play {breaking bad|MediaName}
 PlayTVIntent to play {breaking bad|MediaName} Season {SeasonNum}
 PlayTVIntent to play {breaking bad|MediaName} Season {SeasonNum} Episode {EpisodeNum}
@@ -179,16 +384,21 @@ PlayTVIntent to play {sherlock|MediaName}
 PlayTVIntent to play {sherlock|MediaName} Season {SeasonNum}
 PlayTVIntent to play {sherlock|MediaName} Season {SeasonNum} Episode {EpisodeNum}
 PlayTVIntent to show Season {SeasonNum} Episode {EpisodeNum} of {Shawshank Redemption|MediaName}
+PlayTVIntent to show Season {SeasonNum} Episode {EpisodeNum} of {The Walking Dead|MediaName}
 PlayTVIntent to show Season {SeasonNum} Episode {EpisodeNum} of {breaking bad|MediaName}
 PlayTVIntent to show Season {SeasonNum} Episode {EpisodeNum} of {parks and recreation|MediaName}
 PlayTVIntent to show Season {SeasonNum} Episode {EpisodeNum} of {sherlock|MediaName}
 PlayTVIntent to show Season {SeasonNum} of {Shawshank Redemption|MediaName}
+PlayTVIntent to show Season {SeasonNum} of {The Walking Dead|MediaName}
 PlayTVIntent to show Season {SeasonNum} of {breaking bad|MediaName}
 PlayTVIntent to show Season {SeasonNum} of {parks and recreation|MediaName}
 PlayTVIntent to show Season {SeasonNum} of {sherlock|MediaName}
-PlayTVIntent to show {Shawshank Redemption|MediaName}
 PlayTVIntent to show {Shawshank Redemption|MediaName} Season {SeasonNum}
 PlayTVIntent to show {Shawshank Redemption|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent to show {Shawshank Redemptio|MediaName}
+PlayTVIntent to show {The Walking Deadn|MediaName}
+PlayTVIntent to show {The Walking Dead|MediaName} Season {SeasonNum}
+PlayTVIntent to show {The Walking Dead|MediaName} Season {SeasonNum} Episode {EpisodeNum}
 PlayTVIntent to show {breaking bad|MediaName}
 PlayTVIntent to show {breaking bad|MediaName} Season {SeasonNum}
 PlayTVIntent to show {breaking bad|MediaName} Season {SeasonNum} Episode {EpisodeNum}
@@ -199,16 +409,21 @@ PlayTVIntent to show {sherlock|MediaName}
 PlayTVIntent to show {sherlock|MediaName} Season {SeasonNum}
 PlayTVIntent to show {sherlock|MediaName} Season {SeasonNum} Episode {EpisodeNum}
 PlayTVIntent to watch Season {SeasonNum} Episode {EpisodeNum} of {Shawshank Redemption|MediaName}
+PlayTVIntent to watch Season {SeasonNum} Episode {EpisodeNum} of {The Walking Dead|MediaName}
 PlayTVIntent to watch Season {SeasonNum} Episode {EpisodeNum} of {breaking bad|MediaName}
 PlayTVIntent to watch Season {SeasonNum} Episode {EpisodeNum} of {parks and recreation|MediaName}
 PlayTVIntent to watch Season {SeasonNum} Episode {EpisodeNum} of {sherlock|MediaName}
 PlayTVIntent to watch Season {SeasonNum} of {Shawshank Redemption|MediaName}
+PlayTVIntent to watch Season {SeasonNum} of {The Walking Dead|MediaName}
 PlayTVIntent to watch Season {SeasonNum} of {breaking bad|MediaName}
 PlayTVIntent to watch Season {SeasonNum} of {parks and recreation|MediaName}
 PlayTVIntent to watch Season {SeasonNum} of {sherlock|MediaName}
-PlayTVIntent to watch {Shawshank Redemption|MediaName}
 PlayTVIntent to watch {Shawshank Redemption|MediaName} Season {SeasonNum}
 PlayTVIntent to watch {Shawshank Redemption|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent to watch {Shawshank Redemptio|MediaName}
+PlayTVIntent to watch {The Walking Deadn|MediaName}
+PlayTVIntent to watch {The Walking Dead|MediaName} Season {SeasonNum}
+PlayTVIntent to watch {The Walking Dead|MediaName} Season {SeasonNum} Episode {EpisodeNum}
 PlayTVIntent to watch {breaking bad|MediaName}
 PlayTVIntent to watch {breaking bad|MediaName} Season {SeasonNum}
 PlayTVIntent to watch {breaking bad|MediaName} Season {SeasonNum} Episode {EpisodeNum}
@@ -219,16 +434,21 @@ PlayTVIntent to watch {sherlock|MediaName}
 PlayTVIntent to watch {sherlock|MediaName} Season {SeasonNum}
 PlayTVIntent to watch {sherlock|MediaName} Season {SeasonNum} Episode {EpisodeNum}
 PlayTVIntent watch Season {SeasonNum} Episode {EpisodeNum} of {Shawshank Redemption|MediaName}
+PlayTVIntent watch Season {SeasonNum} Episode {EpisodeNum} of {The Walking Dead|MediaName}
 PlayTVIntent watch Season {SeasonNum} Episode {EpisodeNum} of {breaking bad|MediaName}
 PlayTVIntent watch Season {SeasonNum} Episode {EpisodeNum} of {parks and recreation|MediaName}
 PlayTVIntent watch Season {SeasonNum} Episode {EpisodeNum} of {sherlock|MediaName}
 PlayTVIntent watch Season {SeasonNum} of {Shawshank Redemption|MediaName}
+PlayTVIntent watch Season {SeasonNum} of {The Walking Dead|MediaName}
 PlayTVIntent watch Season {SeasonNum} of {breaking bad|MediaName}
 PlayTVIntent watch Season {SeasonNum} of {parks and recreation|MediaName}
 PlayTVIntent watch Season {SeasonNum} of {sherlock|MediaName}
-PlayTVIntent watch {Shawshank Redemption|MediaName}
 PlayTVIntent watch {Shawshank Redemption|MediaName} Season {SeasonNum}
 PlayTVIntent watch {Shawshank Redemption|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent watch {Shawshank Redemptio|MediaName}
+PlayTVIntent watch {The Walking Deadn|MediaName}
+PlayTVIntent watch {The Walking Dead|MediaName} Season {SeasonNum}
+PlayTVIntent watch {The Walking Dead|MediaName} Season {SeasonNum} Episode {EpisodeNum}
 PlayTVIntent watch {breaking bad|MediaName}
 PlayTVIntent watch {breaking bad|MediaName} Season {SeasonNum}
 PlayTVIntent watch {breaking bad|MediaName} Season {SeasonNum} Episode {EpisodeNum}
@@ -238,3 +458,5 @@ PlayTVIntent watch {parks and recreation|MediaName} Season {SeasonNum} Episode {
 PlayTVIntent watch {sherlock|MediaName}
 PlayTVIntent watch {sherlock|MediaName} Season {SeasonNum}
 PlayTVIntent watch {sherlock|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+StopIntent cancel
+StopIntent stop
