@@ -314,10 +314,10 @@ def launch_chrome(url):
     #xbmc.Addons.ExecuteAddon(addonid='plugin.program.chrome.launcher',params=[url])
     #subprocess.Popen('\"/usr/bin/google-chrome\" --start-maximized --disable-translate --disable-new-tab-first-run --no-default-browser-check --no-first-run  --kiosk \"'+url+'\"', shell=True)
     
-    if not "youtube" in url:
-        time.sleep(5)
+    #if not "youtube" in url:
+    #    time.sleep(5)
         #pyautogui.keyDown('ctrl')
-        time.sleep(1)
+    #    time.sleep(1)
         #pyautogui.press('space')
         #pyautogui.keyUp('ctrl')
         
@@ -334,6 +334,7 @@ def navigate(message_attributes):
         menu_up()
     elif where == 'right':
         menu_up()
+    return send_response_message("OK","Navigate " + where + " received")
 
 
 def send_response_message(voice,card):
