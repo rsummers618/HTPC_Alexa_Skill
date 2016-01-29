@@ -59,3 +59,11 @@ Quite a bit, this is Alpha stage.
 * Generalized plugin detetion
 * Music
 
+#Known Issues
+
+* Basic navigation is slow
+* Generic addon launcher not fully implmented
+* "Problem with expected skills response" means server crash.  Need testing to find any more bugs (they show up in my logs)
+* Some shows launch incorrectly as Sports games
+* Response is sometimes out of sync with performed action
+
