@@ -50,6 +50,8 @@ Thats it.
 
 Quite a bit, this is Alpha stage.
 
+Need to Get published so this can be more user friendly to install
+
 * Fix Full screen on sports
 * Better speech patterns
 * Fix some nagging queue issues
@@ -58,4 +60,16 @@ Quite a bit, this is Alpha stage.
 * State-ful navigation ("play Breaking Bad" -> "Which Season" -> "Season 3") etc
 * Generalized plugin detetion
 * Music
+* AmazonPrime Streaming
+* Chromecast support?
+* Logitch Harmony support
+* Media Location Priorities
+
+#Known Issues
+
+* Basic navigation is slow
+* Generic addon launcher not fully implmented
+* "Problem with expected skills response" means server crash.  Need testing to find any more bugs (they show up in my logs)
+* Some shows launch incorrectly as Sports games
+* Response is sometimes out of sync with performed action
 
