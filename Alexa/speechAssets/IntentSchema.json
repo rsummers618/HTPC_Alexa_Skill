@@ -54,6 +54,31 @@
       "intent": "ExitIntent"
     },
     {
+      "intent": "NavigateIntent",
+      "slots":[
+        {
+          "name": "NavLocation",
+          "type": "LITERAL"
+        }
+      ]
+    },
+    {
+      "intent": "OpenAddonIntent",
+      "slots":[
+        {
+          "name": "Directory",
+          "type": "LITERAL"
+        },
+        {
+          "name": "AddonName",
+          "type": "LITERAL"
+        }
+      ]
+    },
+    {
+      "intent": "StopIntent"
+    },
+    {
       "intent": "AMAZON.HelpIntent"
     }
   ]
