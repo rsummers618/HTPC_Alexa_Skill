@@ -37,7 +37,7 @@ function lookup(InputTitle, callback){
         
         if (!links){
             console.error("No results on google")
-            callback(new Error("No Results on Google"))
+            callback(new Error("No Results on Google for " + InputTitle))
         }
         
         for (var i = 0; i < links.length; ++i) {
@@ -48,11 +48,14 @@ function lookup(InputTitle, callback){
             var reg = /\(.*\).*/;
             var year = links[i].title.match(reg).toString();
             
+            
             console.log(title)
             
+            
+            console.log(year)
             title = title.replace(reg,"").toString()
             year = year.split(")")[0].toString()
-            
+            console.log(year)
 
             //Cannot currently handle episodes
             reg = /TV Episode/;
@@ -60,12 +63,13 @@ function lookup(InputTitle, callback){
                 continue;
             }
             
-                
+            console.log(year)
 
             reg = /TV Series /
             var series = year.match(reg)
             year = year.replace(reg,"")
-
+            console.log(year)
+            console.log(series)
             if (series){
                 reg = /\-.*\)/
             
@@ -74,6 +78,8 @@ function lookup(InputTitle, callback){
 
             year = year.split("–")[0].toString()
             year = year.replace(/\(/,"").toString()
+            
+            console.log(year)
               
             var IMDBid = links[i].link.match(/\d{7}/).toString()
             callback(err,'tt'+IMDBid,series,year,title)

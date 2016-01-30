@@ -1,14 +1,9 @@
 import sys
-
-
-
 import os
 print os.path.realpath(__file__) + '/../lib/' 
 sys.path.append(os.path.realpath(__file__) + '/../lib/')
 import time
 import random
-#import pyautogui
-#import subprocess
 
 from lib import boto3
 from lib import botocore
@@ -27,12 +22,42 @@ sqs.meta.client.meta.events.register(
 
 
 queue_id = addon.getSetting('authcode')
-#queue_id = 'KRKC4LZZNTIJXYYW'
-queue_s = sqs.Queue('https://sqs.us-east-1.amazonaws.com/414515788753/'+queue_id+'_s' )
-queue_r = sqs.Queue('https://sqs.us-east-1.amazonaws.com/414515788753/'+queue_id+'_r' )
+
+
+while len(queue_id) < 15:
+    xbmc.executebuiltin('Notification(Alexa Service,Please enter a valid key into the alexa service)')
+    for i in range(60):
+        time.sleep(1)
+    queue_id = addon.getSetting('authcode')
+
 
 print "listening on "
 print 'https://sqs.us-east-1.amazonaws.com/414515788753/'+queue_id+'_s'
+
+queue_s = None
+queue_r = None
+
+
+def setQueues(queue_id):
+    global queue_s
+    global queue_r
+    try:
+        queue_s = sqs.Queue('https://sqs.us-east-1.amazonaws.com/414515788753/'+queue_id+'_s' )
+        queue_r = sqs.Queue('https://sqs.us-east-1.amazonaws.com/414515788753/'+queue_id+'_r' )
+    except:
+        xbmc.executebuiltin('Notification(Alexa Service,Unable to connect to Alexa Queue Please Check your Key and restart the service)')
+        print "Alexa unable to connect to queue"
+        for i in range(60):
+            time.sleep(1)
+        setQueues(queue_id)
+
+
+
+
+setQueues(queue_id)
+
+
+
 
 
 # MacOS
@@ -149,17 +174,17 @@ def watch_series_pulsar(title,tvdbid,seasonNum,episodeNum,episode_title):
     if seasonNum and episodeNum:
         sendJSONRPC('Player.Open',{'item':{"file":"plugin://plugin.video.pulsar/show/"+tvdbid+"/season/"+seasonNum+"/episode/"+episodeNum+"/play"}})
 
-    	send_response_message("Playing, " + title + ", " + episode_title + " , on pulsar",title + " played on pulsar")
+    	return send_response_message("Playing, " + title + ", " + episode_title + " , on pulsar",title + " played on pulsar")
 
     elif seasonNum:
-         sendJSONRPC('GUI.ActivateWindow',{"window":"videos","parameters":["plugin://plugin.video.pulsar/shows/"+tvdbid+"/season/"+seasonNum+"/episodes/"]})
+         sendJSONRPC('GUI.ActivateWindow',{"window":"videos","parameters":["plugin://plugin.video.pulsar/show/"+tvdbid+"/season/"+seasonNum+"/episodes"]})
 
-    	 send_response_message("Opening, " + title + ", on pulsar",title + " played on pulsar")
+    	 return send_response_message("Opening, " + title + ", on pulsar",title + " played on pulsar")
 
     else:
-        sendJSONRPC('GUI.ActivateWindow',{"window":"videos","parameters":["plugin://plugin.video.pulsar/shows/"+tvdbid+"/seasons/"]})
+        sendJSONRPC('GUI.ActivateWindow',{"window":"videos","parameters":["plugin://plugin.video.pulsar/show/"+tvdbid+"/seasons"]})
 
-    	send_response_message("Opening, " + title + ", on pulsar",title + " played on pulsar")
+    	return send_response_message("Opening, " + title + ", on pulsar",title + " played on pulsar")
     
  
    
@@ -172,17 +197,24 @@ def GetPlayerID():
         return None
 
 
-def play_pause():
-    sendJSONRPC("Player.PlayPause", {"playerid":playerid})
-    #kodi.PlayPause()
-    return jsonify(result={"status": 200})
+def play_pause(message_attributes):
+    print "play Pause received"
+    sendJSONRPC("Player.PlayPause", {"playerid":GetPlayerID()})
+    send_response_message("Ok","Kodi Pause/Resumed")
+    
+def stop(message_attributes):
+    sendJSONRPC("Player.Stop", {"playerid":GetPlayerID()})
+    send_response_message("Ok","Kodi Stopped")
 
 
 def play_movie(message_attributes):#(title,imdbid,netflixid):
 
-    title = message_attributes['title']['StringValue']
-    imdbid = message_attributes['imdbid']['StringValue']
-    netflixid = message_attributes['netflixid']['StringValue']
+    try:
+        title = message_attributes['title']['StringValue']
+        imdbid = message_attributes['imdbid']['StringValue']
+        netflixid = message_attributes['netflixid']['StringValue']
+    except:
+        return send_response_message("Error Playing Movie on Kodi", "Error playing Movie on Kodi")
 
     library = library = sendJSONRPC('VideoLibrary.GetMovies',{'properties':["imdbnumber"]})
     #library = xbmc.VideoLibrary.GetMovies(properties=["imdbnumber"])
@@ -190,7 +222,7 @@ def play_movie(message_attributes):#(title,imdbid,netflixid):
     for movie in movies:
         print movie['imdbnumber']
         if movie['imdbnumber'] == imdbid:
-            print "plaing " + movie['label'] + " " + str(movie['movieid'])
+            print "playng " + movie['label'] + " " + str(movie['movieid'])
             send_response_message("Playing the Movie, " + title + ", locally on Kodi",title + " played locally")
             play_local_movie(movie['movieid'])
             return 
@@ -205,7 +237,7 @@ def play_movie(message_attributes):#(title,imdbid,netflixid):
 def play_local_movie(movieid):
     sendJSONRPC("Playlist.Clear", {"playlistid": 1})
     #kodi.ClearVideoPlaylist()
-    sendJSONRPC("Playlist.Add", {"playlistid": 1, "item": {"movieid": int(movie_id)}})
+    sendJSONRPC("Playlist.Add", {"playlistid": 1, "item": {"movieid": int(movieid)}})
     #kodi.PrepMoviePlaylist(movieid)
     sendJSONRPC('GUI.ActivateWindow',{'window':"videos"})
     #xbmc.GUI.ActivateWindow(window="videos")
@@ -260,7 +292,7 @@ def play_series(message_attributes):#(title,imdbid,netflixid):
             if not season_number or not episode_number:
                 sendJSONRPC('GUI.ActivateWindow',{'window':"videos","parameters":["videodb://2/2/"+str(show['tvshowid'])]})
                 return send_response_message("Opening, " + title + ", locally on Kodi",title + " opened locally")
-            print "plaing " + show['label']# + " " + str(show['movieid'])
+            print "playing " + show['label']# + " " + str(show['movieid'])
             episodes = sendJSONRPC('VideoLibrary.GetEpisodes',{'tvshowid':show['tvshowid'],'properties':['season','episode']})['result']['episodes']
             print episodes
             for episode in episodes: 
@@ -289,13 +321,22 @@ def play_random_movie():
 
     return jsonify(result={"status": 200})
 
-#@app.route('/watch/sports')
+
 def play_sports_stream(message_attributes):
 
     send_response_message("good","good")
     url=message_attributes['url']['StringValue']
     
     os.system("pkill chrome")
+    
+    if "youtube" in url:
+        url = url.replace("watch?v=","/v/")
+        url = url +  "&autoplay=1"
+
+    url = url + "#sports"
+    url = '?kiosk=yes&mode=showSite&stopPlayback=yes&url='+url
+    
+    
     launch_chrome(url)
 
     return 
@@ -303,12 +344,7 @@ def play_sports_stream(message_attributes):
 
 def launch_chrome(url):
 
-    if "youtube" in url:
-        url = url.replace("watch?v=","/v/")
-        url = url +  "&autoplay=1"
-
-    url = url + "#sports"
-    url = '?kiosk=yes&mode=showSite&stopPlayback=yes&url='+url
+    
     
     sendJSONRPC('Addons.ExecuteAddon',{'addonid':'plugin.program.chrome.launcher','params':[url]})
     #xbmc.Addons.ExecuteAddon(addonid='plugin.program.chrome.launcher',params=[url])
@@ -326,16 +362,23 @@ def launch_chrome(url):
 
 def navigate(message_attributes):
     where = message_attributes['nav']['StringValue']
+    found = False
     if where == 'up':
         menu_up()
+        found = True
     elif where == 'down':
-        menu_up()
+        menu_down()
+        found = True
     elif where == 'left':
-        menu_up()
+        menu_left()
+        found = True
     elif where == 'right':
-        menu_up()
-    return send_response_message("OK","Navigate " + where + " received")
-
+        menu_right()
+        found = True
+    if found:
+        return send_response_message("OK","Navigate " + where + " received")
+    else:
+        return send_response_message("No navigation command for " + where,"Navigate " + where + " received")
 
 def send_response_message(voice,card):
     queue_r.send_message(
@@ -359,28 +402,50 @@ message_router = {
     'pandora': listen_pandora,
     'sports': play_sports_stream,
     'addon': play_generic_addon,
-    'navigate':navigate
+    'navigate':navigate,
+    'playpause':play_pause,
+    'stop':stop
 	#'music': play_music
 }
 
 
 #watch_netflix("test","test")
 
-
-queue_s.purge()
+try:
+    queue_s.purge()
+except:
+    print "tried to restart too fast, cannot purge more than every 60 seconds"
+    # Not enough time OR not valid
 
 while (1):  
-    print "trying again"
-    message = queue_s.receive_messages(
-        MaxNumberOfMessages=1,
-        MessageAttributeNames=['*'],
-        WaitTimeSeconds=5,
-        AttributeNames=['*']
-        )
+    #print "trying again"
+    
+    message = None
+    try:
+
+
+        message = queue_s.receive_messages(
+            MaxNumberOfMessages=1,
+            MessageAttributeNames=['*'],
+            WaitTimeSeconds=5,
+            AttributeNames=['*']
+            )
+    except Exception as e:
+        xbmc.executebuiltin('Notification(Alexa Service,Unable to recieve messages Check your Key and restart the service)')
+        print "Unable to receive messages on queue"
+        print e
+        for i in range(60):
+            time.sleep(1)
+        
+        queue_id = addon.getSetting('authcode')
+        setQueues(queue_id)
     
     if message:
 
         print message[0].body
         print message[0].message_attributes
-        message_router[message[0].body](message[0].message_attributes)
+        try:
+            message_router[message[0].body](message[0].message_attributes)
+        except:
+            send_response_message("Unknown Command " + message[0].body + " sent to Kodi","Unknown Command "+ message[0].body + " Received by Kodi")
         message[0].delete()

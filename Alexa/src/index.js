@@ -87,6 +87,8 @@ PlayTV.prototype.eventHandlers.onSessionEnded = function (sessionEndedRequest, s
     console.log("PlayTV onSessionEnded requestId: " + sessionEndedRequest.requestId
         + ", sessionId: " + session.sessionId);
     // any cleanup logic goes here
+	
+	// TODO Should I move Queue Cleanup to when a session ends??? 
 };
 
 
@@ -135,7 +137,13 @@ function CreateQueue(queue_id,read,callback){
             }
         }
         sqs.createQueue(params,function(err,data){
-            callback(err,data)
+			if (err) {
+				console.error(err,err.stack);
+				return callback(err,data)
+			}
+			else{
+				return callback(err,data)
+			}
         });
 }
 
@@ -148,8 +156,14 @@ function SendMessage(queue_id,body,message_attributes,callback){
     };
     
     sqs.sendMessage(message,function(err,data){
-        console.log("Sent Message")
-        callback(err,data)
+		if (err) {
+			console.error(err,err.stack);
+			return callback(err,data)
+		}
+		else{
+			console.log("Sent Message To Queue: " + message.QueueUrl)
+			return callback(err,data)
+		}
     });
 
 
@@ -157,13 +171,19 @@ function SendMessage(queue_id,body,message_attributes,callback){
 
 function CreateQueues(queue_id,callback){
     CreateQueue(queue_id+'_s',false,function(err,data){
-        if (err) console.log(err,err.stack);
+        if (err) {
+			console.log(err,err.stack);
+			return callback(err,data)
+		}
         else{
             //console.log(data)
             CreateQueue(queue_id+'_r',true,function(err,data){
-                if (err) console.log(err,err.stack);
+                if (err) {
+					console.error(err,err.stack);
+					return callback(err,data)
+				}
                 else{
-                    callback(err,data)
+                    return callback(err,data)
                 }
            });
         }
@@ -185,14 +205,24 @@ function SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,ca
             };
     //console.log("waiting for message resonse")
     sqs.receiveMessage(params_rcv,function(err,data){
-        if (err)
-            console.error(err)
-        if (data.Messages){
+        if (err){
+            console.error(err,err.stack)
+	    return callback(err,data)
+			
+	}
+	if(!data){
+	    console.log("No Extra messages to Delete")
+	}
+        else if (data.Messages){
+            console.log("We have " + data.Messages.length + " Extra Messages")
             for (i = 0; i < data.Messages.length; i ++){
-                console.log("Extra Message")
+                console.log("Extra Message Found")
                 console.log(data.Messages[i])
                 sqs.deleteMessage({QueueUrl:'https://sqs.'+AWSRegion+'.amazonaws.com/'+AWSAccountIds+'/'+queue_id+'_r',ReceiptHandle:data.Messages[i].ReceiptHandle},function(err,del){
-                    if(err)console.log(err,err.stack)
+                    if(err){
+						console.log(err,err.stack)
+						return callback(err,data)
+					}
                     else{
                         console.log("deleted extra message")
                     }
@@ -211,21 +241,27 @@ function SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,ca
                 WaitTimeSeconds : 2,
                 MessageAttributeNames: ['All'],
             };
-            console.log("waiting for message resonse")
+            console.log("waiting for message response")
             sqs.receiveMessage(params,function(err,data){
-                if(err) console.log(err,err.stack)
+                if(err){
+					console.log(err,err.stack)
+					return callback(err,data)
+				}
                 else{
                     console.log(data)
                     if(!data.Messages){
-                        console.log("response timeout")
-                        callback("timeout waiting for response from Kodi","")
+                        console.error("Timeout waiting for response from Kodi")
+                        return callback(new Error("Timeout Waiting for response from Kodi"),"")
                     }
                     else{
                         console.log(data.Messages[0])
                         sqs.deleteMessage({QueueUrl:'https://sqs.'+AWSRegion+'.amazonaws.com/'+AWSAccountIds+'/'+queue_id+'_r',ReceiptHandle:data.Messages[0].ReceiptHandle},function(err,del){
-                            if(err)console.log(err,err.stack)
+                            if(err){
+								console.log(err,err.stack)
+								return callback(err,data)
+							}
                             else{
-                                callback (err,data)
+                                return callback (err,data)
                             }
                         
                         });
@@ -244,7 +280,7 @@ function GetIMDBID(input_title,callback){
     console.log(requestString)
     request(requestString, function(err,res,stringbody){
         if (err){
-            callback(err)
+            return callback(err)
         }
         console.timeEnd("omdb")
         console.log(stringbody)
@@ -252,27 +288,34 @@ function GetIMDBID(input_title,callback){
         var seriesIdx = '1'
         var body = JSON.parse(stringbody)
         if (body.Response == "False"){
-            API_Search.lookup(input_title, function(err,imdbid,year,series,title){
+			console.log("OMDB search failed, Trying Google")
+            API_Search.lookup(input_title, function(err,imdbid,series,year,title){
                 if (err){
-                    callback(err)
+                    return callback(err)
                 }
-                callback(err,imdbid,year,series,title)
+				console.log("Google search returned: IMDBID: " + imdbid + " Year:" + year + " Title:" + title + " Series:" + series)
+                return callback(err,imdbid,year,series,title)
             
             });
             //response.tellWithCard(intent.slots.MediaName.value + " Not found on IMDB", "TV player", "Media not found");
         }
         else{
-            var imdbid = body.imdbID
-            var year = body.Year
-            year = year.substring(0,4)
-            year = year.split('–')[0]
-            var series = false
-            var title = body.Title
+			try{
+				var imdbid = body.imdbID
+				var year = body.Year
+				year = year.substring(0,4)
+				year = year.split('–')[0]
+				var series = false
+				var title = body.Title
 
-            if (body.Type="series")
-                seriesIdx = '3'
-                series = true
-            callback(err,imdbid,year,series,title)
+				if (body.Type="series")
+					seriesIdx = '3'
+					series = true
+			}
+			catch(e){
+				return callback(e)
+			}
+            return callback(err,imdbid,year,series,title)
         }
     });
 }
@@ -314,33 +357,38 @@ PlayTV.prototype.intentHandlers = {
         
         GetIMDBID(intent.slots.MediaName.value, function(err,imdbid,year,series,title){
             if (err){
-                response.tellWithCard( err, "TV player", err);
+                return response.tellWithCard( err, "TV player", err);
             }
-        
+			try{
+				console.log("imdbid: " + imdbid + " year: " + year)
+			}
+			catch(e){
+				return response.tellWithCard(e,"TV Player",e)
+			}
+		
             if (series)
                 seriesIdx = '3'
 
-                
-                
             var show_tvdbid
             var episode_tvdbid
             var episodeTitle = ''
+
             if (series){
                 var tvdb = new TVDB(TVDBAPI)
                 //tvdbRequestString = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid="+imdbid
                 console.time("TVDBseries")
                 tvdb.getSeriesByRemoteId(imdbid,function(error,res){
                     if (error){
-                        response.tellWithCard(title + " " + err, "TV player", err);
+                        return response.tellWithCard(title + " " + err, "TV player", err);
                     }
                     if (!res){
-                        response.tellWithCard("Couldn't Contact TVDB, try again later", "TV player", "Error contacting TVDB");
+                        return response.tellWithCard("Couldn't Contact TVDB, try again later", "TV player", "Error contacting TVDB");
                     }
                     
                     
                 
                     console.timeEnd("TVDBseries")
-                    console.log(res)
+                    //console.log(res)
                     show_tvdbid = res.id
                     console.log(show_tvdbid)
                     console.log(year)
@@ -348,22 +396,22 @@ PlayTV.prototype.intentHandlers = {
                         console.time("instantwatcher")
                         API_Search.netflixSearch(title,year,'3',function(err,netflixid){
                             if (err){
-                                response.tellWithCard(title + " " + err, "TV player", err);
+                                return response.tellWithCard(title + " " + err, "TV player", err);
                             }
                             console.timeEnd("instantwatcher")
                             console.log(netflixid)
-                            sendMediaToQueue("series",imdbid,title,netflixid,show_tvdbid,episode_tvdbid,seasonNum,episodeNum,episodeTitle)
+                            return sendMediaToQueue("series",imdbid,title,netflixid,show_tvdbid,episode_tvdbid,seasonNum,episodeNum,episodeTitle)
                         });
                     }
                     else if(!episodeNum){
                         console.time("instantwatcher")
                         API_Search.netflixSearch(title + ' season ' + seasonNum,year,'2',function(err,netflixid){
                             if (err){
-                                response.tellWithCard(title + " " + err, "TV player", err);
+                                return response.tellWithCard(title + " " + err, "TV player", err);
                             }
                             console.timeEnd("instantwatcher")
                             console.log(netflixid)
-                            sendMediaToQueue("series",imdbid,title,netflixid,show_tvdbid,episode_tvdbid,seasonNum,episodeNum,episodeTitle)
+                            return sendMediaToQueue("series",imdbid,title,netflixid,show_tvdbid,episode_tvdbid,seasonNum,episodeNum,episodeTitle)
                         });
                     }
                     else{
@@ -392,7 +440,7 @@ PlayTV.prototype.intentHandlers = {
                                     }
                                     console.timeEnd("instantwatcher")
                                     console.log(netflixid)
-                                    sendMediaToQueue("series",imdbid,title,netflixid,show_tvdbid,episode_tvdbid,seasonNum,episodeNum,episodeTitle)
+                                    return sendMediaToQueue("series",imdbid,title,netflixid,show_tvdbid,episode_tvdbid,seasonNum,episodeNum,episodeTitle)
                                 });
                             }
                         
@@ -420,7 +468,7 @@ PlayTV.prototype.intentHandlers = {
                     }
                      console.timeEnd("instantwatcher")
                     console.log(netflixid)
-                    sendMediaToQueue("movie",imdbid,title,netflixid,show_tvdbid,episode_tvdbid,season_number,episode_number,false)
+                    return sendMediaToQueue("movie",imdbid,title,netflixid,show_tvdbid,episode_tvdbid,seasonNum,episodeNum,false)
                 });
             }
             
@@ -528,8 +576,8 @@ PlayTV.prototype.intentHandlers = {
          message_attributes = {
         }
                 
-        message_body = "PausePlay"
-        
+        message_body = "playpause"
+
         SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){  
             if (err){
                 response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
@@ -542,35 +590,30 @@ PlayTV.prototype.intentHandlers = {
     
     },
     
-    "NavigateIntent": function (intent, session, response) {
-        queue_id = session.user.userId.substring(60)
-        
-         message_attributes = {
-            nav: {
-                DataType: 'String',
-                StringValue: intent.slots.NavLocation.value
-            }
-        }
-                
-        message_body = "PausePlay"
-        
-        SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){  
-            if (err){
-                response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
-                return console.error(err.message);
-            }
-            response.tellWithCard(res.Messages[0].MessageAttributes.voice.StringValue,"TV Player",res.Messages[0].MessageAttributes.card.StringValue);
-            
-
-        });
-    
-    },
     
     "OpenAddonIntent": function (intent, session, response) {
         
         response.tellWithCard("Opening addons is not yet implemented","TV Player","Not yet implemented");
+        return
+    },
+    
+    "StopIntent": function (intent, session, response) {
+        queue_id = session.user.userId.substring(60)
+        
+        message_attributes = {}
+                
+        message_body = "stop"
+
+        SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){  
+            if (err){
+                response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
+                return console.error(err.message);
+            }
+            response.tellWithCard(res.Messages[0].MessageAttributes.voice.StringValue,"TV Player",res.Messages[0].MessageAttributes.card.StringValue);
             
 
+        });
+    
     },
     
     "NavigateIntent": function (intent, session, response) {
@@ -679,18 +722,12 @@ PlayTV.prototype.intentHandlers = {
                                         return
                                     
                                     });
-
-         
                                 }
                                 
                             }
                             console.log('Subreddit callback')
-
                         });
-                       
                     }
-
-                    
                 }
                 subreddit_callback()
             });
