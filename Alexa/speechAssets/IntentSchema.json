@@ -39,47 +39,68 @@
       "intent": "GetKeyIntent"
     },
     {
-      "intent": "NewEpisodesIntent",
-      "slots":[
-        {
-          "name": "ShowName",
-          "type": "LITERAL"
-        }
-      ]
-    },
-    {
       "intent": "PausePlayIntent"
     },
     {
       "intent": "ExitIntent"
     },
     {
-      "intent": "NavigateIntent",
+      "intent": "NavigateStop",
       "slots":[
         {
           "name": "NavLocation",
-          "type": "LITERAL"
+          "type": "NavLocation"
+        },
+        {
+          "name": "NumVal",
+          "type": "AMAZON.NUMBER"
         }
       ]
     },
     {
-      "intent": "OpenAddonIntent",
+      "intent": "NavigateContinue",
       "slots":[
         {
-          "name": "Directory",
-          "type": "LITERAL"
+          "name": "NavLocation",
+          "type": "NavLocation"
         },
         {
-          "name": "AddonName",
-          "type": "LITERAL"
+          "name": "NumVal",
+          "type": "AMAZON.NUMBER"
         }
       ]
     },
+    {
+      "intent": "NavigateStart"
+      
+    },
+    
     {
       "intent": "StopIntent"
     },
     {
-      "intent": "AMAZON.HelpIntent"
+      "intent": "WhatsPlayingIntent"
+      
+    },
+    {
+      "intent": "RecentMoviesIntent"
+      
+    },
+    {
+      "intent": "RecentEpisodesIntent"
+      
+    },
+    {
+      "intent": "AMAZON.HelpIntent" 
+    },
+    {
+      "intent": "NumberIntent" ,
+      "slots":[
+        {
+          "name": "NumVal",
+          "type": "AMAZON.NUMBER"
+        }
+       ]
     }
   ]
 }

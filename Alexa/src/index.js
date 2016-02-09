@@ -16,7 +16,14 @@ var TVDBAPI = secret.API_KEYS.TVDBAPI
 var SnoocoreKey = secret.API_KEYS.Snoocore
 
 
-
+// Until I can find the location of rogue error
+/*
+process.on('uncaughtException', function (err) {
+  console.error(err);
+  console.log(err.stack)
+  console.log("Error Found, Not crashing application");
+  response.tellWithCard("Exception, Please contact the developer", "Watch TV" , "Exception, Please contact the developer");
+});*/
 
 
 console.log("starting")
@@ -263,7 +270,6 @@ function SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,ca
                             else{
                                 return callback (err,data)
                             }
-                        
                         });
                     }
                     
@@ -278,8 +284,11 @@ function SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,ca
 function GetIMDBID(input_title,callback){
     requestString = "http://www.omdbapi.com/?t="+input_title+"&y=&r=json"//&season="+intent.slots.SeasonNum.value
     console.log(requestString)
-    request(requestString, function(err,res,stringbody){
+
+    request(requestString,{timeout:1500}, function(err,res,stringbody){
         if (err){
+            console.log(err)
+            console.log(err.stack)
             return callback(err)
         }
         console.timeEnd("omdb")
@@ -307,17 +316,120 @@ function GetIMDBID(input_title,callback){
 				year = year.split('–')[0]
 				var series = false
 				var title = body.Title
-
-				if (body.Type="series")
+				if (body.Type=="series"){
 					seriesIdx = '3'
 					series = true
+                }
 			}
 			catch(e){
 				return callback(e)
 			}
+            
             return callback(err,imdbid,year,series,title)
         }
     });
+}
+
+function SelectEpisode(response,session,imdbid,title,year,show_tvdbid,episodeNum,seasonNum){
+    
+    session.attributes.imdbid = imdbid
+    session.attributes.title = title
+    session.attributes.show_tvdbid = show_tvdbid
+    session.attributes.episodeNum = episodeNum
+    session.attributes.seasonNum = seasonNum
+    if (!seasonNum){
+        session.attributes.series = true
+        session.attributes.whichSeason=true
+        //SendMessage(queue_id,body,message_attributes,callback)
+        return response.ask("What Season?", "Which season of " + title + " would you like to play?");
+    }    
+    if (!episodeNum){
+        session.attributes.series = true
+        session.attributes.whichEpisode=true
+        return response.ask("Which Episode?", "Which episode from season" + seasonNum.toString() + " of " + title + " would you like to play?");
+    }
+    
+    //console.log(res)
+    
+    console.log(show_tvdbid)
+    console.log(year)
+   
+    console.time("tvdbepisodes")
+    var tvdb = new TVDB(TVDBAPI)
+    tvdb.getEpisodesById(show_tvdbid, function(error, res){
+        if (error){
+            response.tellWithCard(title + " " + err, "TV player", err);
+        }
+        console.timeEnd("tvdbepisodes")
+        //console.log(res)
+        found = false
+        for (i = 0; i < res.length;i ++){
+            episode =  res[i]
+            //console.log(i)
+            if (parseInt(episode.EpisodeNumber) == parseInt(episodeNum) && parseInt(episode.SeasonNumber) == parseInt(seasonNum)){
+                found = true
+                episode_tvdbid = episode.id
+                year = episode.FirstAired
+                 year = year.split('-')[0]
+                episodeTitle =  episode.EpisodeName
+                console.log(episode)
+                console.time("instantwatcher")
+                API_Search.netflixSearch(title + ' ' + episodeTitle,year,'4',function(err,netflixid){
+                    if (err){
+                        response.tellWithCard(title + " " + err, "TV player", err);
+                    }
+                    console.timeEnd("instantwatcher")
+                    console.log(netflixid)
+                    return sendMediaToQueue(response,queue_id,"series",imdbid,title,netflixid,show_tvdbid,episode_tvdbid,seasonNum,episodeNum,episodeTitle)
+                });
+            }
+        
+        }
+        if (found == false){
+             return response.tellWithCard(" I couldn't find Episode " + episodeNum, "TV player", "Couldn't find Episode");
+        }
+        
+        
+        
+    });
+       
+}
+
+function sendMediaToQueue(response,queue_id,typeText,imdbid,title,netflixid,show_tvdbid,episode_tvdbid,season_number,episode_number,episode_title){
+    
+    if (!imdbid){imdbid = '-1'}
+    
+    message_attributes = {}
+    if(imdbid){message_attributes.imdbid={DataType:'String',StringValue:imdbid}}
+    if(title){message_attributes.title={DataType: 'String',StringValue: title}}
+    if(netflixid){message_attributes.netflixid={DataType: 'String',StringValue: netflixid}}
+    if(show_tvdbid){message_attributes.show_tvdbid={DataType: 'String',StringValue: show_tvdbid}}
+    if(episode_tvdbid){message_attributes.episode_tvdbid={DataType: 'String',StringValue: episode_tvdbid}}
+    if(season_number){message_attributes.season_number={DataType: 'String',StringValue: season_number}}
+    if(episode_number){message_attributes.episode_number={DataType: 'String',StringValue: episode_number}}
+    if(episode_title){message_attributes.episode_title={DataType: 'String',StringValue: episode_title}}
+           
+    
+   
+        
+    message_body = typeText
+        
+    console.time("kodi")
+    SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){    
+        if (err){
+            console.log(res)
+            response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
+            return console.error(err.message);
+        }
+        console.timeEnd("kodi")
+            
+        //retval = JSON.parse(res.body)
+        console.log(res.Messages[0].MessageAttributes)
+        response.tellWithCard(res.Messages[0].MessageAttributes.voice.StringValue,"TV Player",res.Messages[0].MessageAttributes.card.StringValue);
+        //response.tellWithCard(retval.result.voice,"TV Player",retval.result.card);
+        console.timeEnd("overall")
+    });
+    
 }
 
 
@@ -339,12 +451,13 @@ PlayTV.prototype.intentHandlers = {
     },
     
     
+    
     "PlayTVIntent": function (intent, session, response) {
         queue_id = session.user.userId.substring(60) 
         console.log("PlayTVIntent")
         
         console.time("omdb")
-        console.time("overall")
+        console.time("overall") 
         
         var seasonNum
         if(intent.slots.SeasonNum)
@@ -361,6 +474,13 @@ PlayTV.prototype.intentHandlers = {
             }
 			try{
 				console.log("imdbid: " + imdbid + " year: " + year)
+                console.log("series: " + series)
+                if(series){
+                    console.log("This is a series")
+                }
+                else{
+                    console.log("This is a movie")
+                }
 			}
 			catch(e){
 				return response.tellWithCard(e,"TV Player",e)
@@ -376,7 +496,6 @@ PlayTV.prototype.intentHandlers = {
             if (series){
                 var tvdb = new TVDB(TVDBAPI)
                 //tvdbRequestString = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid="+imdbid
-                console.time("TVDBseries")
                 tvdb.getSeriesByRemoteId(imdbid,function(error,res){
                     if (error){
                         return response.tellWithCard(title + " " + err, "TV player", err);
@@ -385,139 +504,28 @@ PlayTV.prototype.intentHandlers = {
                         return response.tellWithCard("Couldn't Contact TVDB, try again later", "TV player", "Error contacting TVDB");
                     }
                     
-                    
-                
-                    console.timeEnd("TVDBseries")
-                    //console.log(res)
+                    //// INSERTING HERE
                     show_tvdbid = res.id
-                    console.log(show_tvdbid)
-                    console.log(year)
-                    if(!seasonNum){
-                        console.time("instantwatcher")
-                        API_Search.netflixSearch(title,year,'3',function(err,netflixid){
-                            if (err){
-                                return response.tellWithCard(title + " " + err, "TV player", err);
-                            }
-                            console.timeEnd("instantwatcher")
-                            console.log(netflixid)
-                            return sendMediaToQueue("series",imdbid,title,netflixid,show_tvdbid,episode_tvdbid,seasonNum,episodeNum,episodeTitle)
-                        });
-                    }
-                    else if(!episodeNum){
-                        console.time("instantwatcher")
-                        API_Search.netflixSearch(title + ' season ' + seasonNum,year,'2',function(err,netflixid){
-                            if (err){
-                                return response.tellWithCard(title + " " + err, "TV player", err);
-                            }
-                            console.timeEnd("instantwatcher")
-                            console.log(netflixid)
-                            return sendMediaToQueue("series",imdbid,title,netflixid,show_tvdbid,episode_tvdbid,seasonNum,episodeNum,episodeTitle)
-                        });
-                    }
-                    else{
-                    console.time("tvdbepisodes")
-                    tvdb.getEpisodesById(show_tvdbid, function(error, res){
-                        if (error){
-                            response.tellWithCard(title + " " + err, "TV player", err);
-                        }
-                        console.timeEnd("tvdbepisodes")
-                        //console.log(res)
-                        found = false
-                        for (i = 0; i < res.length;i ++){
-                            episode =  res[i]
-                            //console.log(i)
-                            if (parseInt(episode.EpisodeNumber) == parseInt(episodeNum) && parseInt(episode.SeasonNumber) == parseInt(seasonNum)){
-                                found = true
-                                episode_tvdbid = episode.id
-                                year = episode.FirstAired
-                                 year = year.split('-')[0]
-                                episodeTitle =  episode.EpisodeName
-                                console.log(episode)
-                                console.time("instantwatcher")
-                                API_Search.netflixSearch(title + ' ' + episodeTitle,year,'4',function(err,netflixid){
-                                    if (err){
-                                        response.tellWithCard(title + " " + err, "TV player", err);
-                                    }
-                                    console.timeEnd("instantwatcher")
-                                    console.log(netflixid)
-                                    return sendMediaToQueue("series",imdbid,title,netflixid,show_tvdbid,episode_tvdbid,seasonNum,episodeNum,episodeTitle)
-                                });
-                            }
-                        
-                        }
-                        if (found == false){
-                             response.tellWithCard(" I couldn't find Episode " + episodeNum, "TV player", "Couldn't find Episode");
-                        }
-                        
-                        
-                        
-                    });
-                    }
+                    return SelectEpisode(response, session,imdbid,title,year,show_tvdbid,episodeNum,seasonNum)
                 });
                 
             }
             else{
                 
                 year = year.split('-')[0]
-               
-                
-                console.time("instantwatcher")
+
                 API_Search.netflixSearch(title,year,'1',function(err,netflixid){
                     if (err){
                         response.tellWithCard(title + " " + err, "TV player", err);
                     }
-                     console.timeEnd("instantwatcher")
                     console.log(netflixid)
-                    return sendMediaToQueue("movie",imdbid,title,netflixid,show_tvdbid,episode_tvdbid,seasonNum,episodeNum,false)
+                    return sendMediaToQueue(response,queue_id,"movie",imdbid,title,netflixid,show_tvdbid,episode_tvdbid,seasonNum,episodeNum,false)
                 });
             }
             
             
         });
             
-            
-            
-        function sendMediaToQueue(typeText,imdbid,title,netflixid,show_tvdbid,episode_tvdbid,season_number,episode_number,episode_title){
-            
-            if (!imdbid){imdbid = '-1'}
-            
-            message_attributes = {}
-            if(imdbid){message_attributes.imdbid={DataType:'String',StringValue:imdbid}}
-            if(title){message_attributes.title={DataType: 'String',StringValue: title}}
-            if(netflixid){message_attributes.netflixid={DataType: 'String',StringValue: netflixid}}
-            if(show_tvdbid){message_attributes.show_tvdbid={DataType: 'String',StringValue: show_tvdbid}}
-            if(episode_tvdbid){message_attributes.episode_tvdbid={DataType: 'String',StringValue: episode_tvdbid}}
-            if(season_number){message_attributes.season_number={DataType: 'String',StringValue: season_number}}
-            if(episode_number){message_attributes.episode_number={DataType: 'String',StringValue: episode_number}}
-            if(episode_title){message_attributes.episode_title={DataType: 'String',StringValue: episode_title}}
-                   
-            
-           
-                
-            message_body = typeText
-                
-            console.time("kodi")
-            SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){    
-                if (err){
-                    console.log(res)
-                    response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
-                    return console.error(err.message);
-                }
-                console.timeEnd("kodi")
-                    
-                //retval = JSON.parse(res.body)
-                console.log(res.Messages[0].MessageAttributes)
-                response.tellWithCard(res.Messages[0].MessageAttributes.voice.StringValue,"TV Player",res.Messages[0].MessageAttributes.card.StringValue);
-                //response.tellWithCard(retval.result.voice,"TV Player",retval.result.card);
-                console.timeEnd("overall")
-            });
-            
-        }
-            
-            
-        
-       
-        
     },
     
     
@@ -549,6 +557,16 @@ PlayTV.prototype.intentHandlers = {
     "NewEpisodesIntent": function (intent, session, response) {
         queue_id = session.user.userId.substring(60)
         
+        try{
+            if(!intent.slots.ShowName.value){
+                console.error("No show specified");
+                return response.tellWithCard("You Must specify a show", "TV player", "No show named, New Episodes");
+            }
+        }
+        catch(e){
+           console.error(e);
+           return response.tellWithCard("You Must specify a show", "TV player", "No show named, New Episodes");
+        }
         message_attributes = {
             show: {
                 DataType: 'String',
@@ -557,25 +575,33 @@ PlayTV.prototype.intentHandlers = {
         }
                 
         message_body = "NewEpisodes"
-        
+        try{
         SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){  
             if (err){
-                response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
-                return console.error(err.message);
+                console.error(err.message);
+                return response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
+                
             }
-            response.tellWithCard(res.Messages[0].MessageAttributes.voice.StringValue,"TV Player",res.Messages[0].MessageAttributes.card.StringValue);
+            return response.tellWithCard(res.Messages[0].MessageAttributes.voice.StringValue,"TV Player",res.Messages[0].MessageAttributes.card.StringValue);
             
 
         });
+        }
+    catch(e){
+        console.error(e);
+        return response.tellWithCard("Error getting recent shows", "TV player", "Error getting recent episodes");
+    }
+        
     
     },
     
     "PausePlayIntent": function (intent, session, response) {
+        if (session.attributes.whichSeason){
+             response.ask("Can you please repeat that?","Can you please repeat that?");
+        }
         queue_id = session.user.userId.substring(60)
         
-         message_attributes = {
-        }
-                
+        message_attributes = {}
         message_body = "playpause"
 
         SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){  
@@ -590,6 +616,31 @@ PlayTV.prototype.intentHandlers = {
     
     },
     
+      
+    "NumberIntent": function (intent, session, response) {
+        console.log("Number Intent")
+        console.log(session.attributes)
+        if (session.attributes.series && session.attributes.whichSeason){
+            if (intent.slots.NumVal.value){
+                session.attributes.seasonNum = intent.slots.NumVal.value
+                session.attributes.whichSeason = false
+            }
+            return SelectEpisode(response, session,session.attributes.imdbid,session.attributes.title,session.attributes.year,session.attributes.show_tvdbid,session.attributes.episodeNum,session.attributes.seasonNum)
+        }
+        else if (session.attributes.series && session.attributes.whichEpisode){
+            if (intent.slots.NumVal.value){
+                session.attributes.episodeNum = intent.slots.NumVal.value
+                session.attributes.whichEpisode = false
+            }
+            return SelectEpisode(response, session,session.attributes.imdbid,session.attributes.title,session.attributes.year,session.attributes.show_tvdbid,session.attributes.episodeNum,session.attributes.seasonNum)
+        }
+        else{
+            response.ask("I didn't understand. What do you want?","I didn't understand. What do you want?");
+        }
+        
+    },
+    
+    
     
     "OpenAddonIntent": function (intent, session, response) {
         
@@ -597,11 +648,12 @@ PlayTV.prototype.intentHandlers = {
         return
     },
     
+    
+    
     "StopIntent": function (intent, session, response) {
         queue_id = session.user.userId.substring(60)
         
         message_attributes = {}
-                
         message_body = "stop"
 
         SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){  
@@ -616,19 +668,13 @@ PlayTV.prototype.intentHandlers = {
     
     },
     
-    "NavigateIntent": function (intent, session, response) {
+    
+    "WhatsPlayingIntent": function (intent, session, response) {
         queue_id = session.user.userId.substring(60)
+        
+        message_attributes = {}
+        message_body = "playing"
 
-        message_body = "navigate"
-        message_attributes = {
-            nav: {
-                DataType: 'String',
-                StringValue: intent.slots.NavLocation.value
-            }
-        }
-        
-                
-        
         SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){  
             if (err){
                 response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
@@ -640,6 +686,123 @@ PlayTV.prototype.intentHandlers = {
         });
     
     },
+    
+    "RecentMoviesIntent": function (intent, session, response) {
+        queue_id = session.user.userId.substring(60)
+        
+        message_attributes = {}
+        message_body = "recent_movies"
+
+        SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){  
+            if (err){
+                response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
+                return console.error(err.message);
+            }
+            response.tellWithCard(res.Messages[0].MessageAttributes.voice.StringValue,"TV Player",res.Messages[0].MessageAttributes.card.StringValue);
+            
+
+        });
+    
+    },
+    "RecentEpisodesIntent": function (intent, session, response) {
+        queue_id = session.user.userId.substring(60)
+        
+        message_attributes = {}
+        message_body = "recent_episodes"
+
+        SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){  
+            if (err){
+                response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
+                return console.error(err.message);
+            }
+            response.tellWithCard(res.Messages[0].MessageAttributes.voice.StringValue,"TV Player",res.Messages[0].MessageAttributes.card.StringValue);
+            
+
+        });
+    
+    },
+    
+    "NavigateContinue": function (intent, session, response) {
+        if (!session.attributes.Navigate)
+            response.ask("Could you repeat that?","Please repeat what you just said")
+        
+        session.attributes.Navigate = true
+        
+        queue_id = session.user.userId.substring(60)
+        
+        
+        message_body = "navigate"
+        num = '1'
+        if (intent.slots.NumVal.value){
+            num = intent.slots.NumVal.value
+        }
+        message_attributes = {
+            nav: {
+                DataType: 'String',
+                StringValue: intent.slots.NavLocation.value
+            },
+            num: {
+                DataType: 'String',
+                StringValue: num
+            },
+        }
+        
+        SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){  
+            if (err){
+                response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
+                return console.error(err.message);
+            }
+            response.ask(res.Messages[0].MessageAttributes.voice.StringValue,res.Messages[0].MessageAttributes.card.StringValue);
+            
+
+        });
+    
+    },
+    
+    "NavigateStart": function (intent, session, response) {
+
+        session.attributes.Navigate = true
+
+        response.ask("Navigating","Navigation mode active, please say a command such as, Up Two")
+    },
+    
+    "NavigateStop": function (intent, session, response) {
+        queue_id = session.user.userId.substring(60)
+        
+
+        if (!intent.slots.NavLocation.value)
+            return response.tell("Done Navigating")
+        
+        session.attributes.Navigate = false
+        
+        message_body = "navigate"
+        num = '1'
+        if (intent.slots.NumVal.value){
+            num = intent.slots.NumVal.value
+        }
+        message_attributes = {
+            nav: {
+                DataType: 'String',
+                StringValue: intent.slots.NavLocation.value
+            },
+            num: {
+                DataType: 'String',
+                StringValue: num
+            },
+        }
+
+        SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){  
+            if (err){
+                response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
+                return console.error(err.message);
+            }
+            response.tellWithCard(res.Messages[0].MessageAttributes.voice.StringValue,"TV Player",res.Messages[0].MessageAttributes.card.StringValue);
+
+        });
+    
+    },
+    
+    
     
     "PlaySportsIntent": function (intent, session, response) {
         queue_id = session.user.userId.substring(60)
@@ -693,38 +856,52 @@ PlayTV.prototype.intentHandlers = {
                             
                             var exp =  /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi;
                             
+                            numStreams = 0
+                            message_attributes = {}
+                            
+                            
                             for(var k in comments[1].data.children){
 
                                 if(!comments[1].data.children[k].data.body)
                                     continue
                                 var temp = comments[1].data.children[k].data.body.match(exp)
 
-                                if (temp && !found){
-                                    found = true
-
-                                    message_attributes = {
+                                if (temp){
+                                    //found = true
+                                    console.log("numStreams = " + numStreams.toString())
+                                    message_attributes['url'+numStreams.toString()] = {}
+                                    
+                                    message_attributes['url'+numStreams.toString()]['DataType'] = 'String'
+                                    message_attributes['url'+numStreams.toString()]['StringValue'] = temp[0]
+                                    numStreams++
+                                    if (numStreams >= 10)
+                                        break
+                                    /*message_attributes = {
                                         url: {
                                             DataType: 'String',
                                             StringValue: temp[0]
                                         }
-                                    }
+                                    }*/
                 
-                                    message_body = "sports"
-                                    SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){ 
-                                        if (err){
-                                            response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
-                                            return console.error(err.message);
-                                        }
-                                        ResponseTitle = ThreadTitle.replace(/Game Thread\:/gi,"")
-                                        ResponseTitle = ResponseTitle.replace(/\[request\]/gi,"")
-                                        response.tellWithCard("Playing " + ResponseTitle,"TV Player","Playing " + ResponseTitle);
-                                        
-                                        return
                                     
-                                    });
                                 }
                                 
+                                
                             }
+                            message_body = "sports"
+                            SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){ 
+                                if (err){
+                                    response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
+                                    return console.error(err.message);
+                                }
+                                ResponseTitle = ThreadTitle.replace(/Game Thread\:/gi,"")
+                                ResponseTitle = ResponseTitle.replace(/\[request\]/gi,"")
+                                response.tellWithCard("Playing " + ResponseTitle,"TV Player","Playing " + ResponseTitle);
+                                
+                                return
+                                    
+                            });
+                            
                             console.log('Subreddit callback')
                         });
                     }

@@ -1,0 +1,9 @@
+Up
+Down
+Left
+Right
+Select
+Back
+Exit
+Menu
+Info

@@ -2,3 +2,10 @@ v0.0.1 (2016-1-14)
  - Initial test to get service working on kodi
 v0.0.2 (2016-1-29)
  - Lots of Bug fixes reported by users
+v0.0.3 (2016-2-8)
+ - Lots of Bug fixes
+ - Initial support for apple/Android
+ - Added Stateful Navigation
+ - Added Stateful Episode selection
+ - Added "recently added" movies and shows
+ - Some Sports now play within Kodi

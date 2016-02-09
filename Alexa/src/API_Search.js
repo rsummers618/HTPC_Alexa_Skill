@@ -14,6 +14,8 @@ var nextCounter = 4
 const API_KEY =secret.API_KEYS.GOOGLE_API_KEY
 const CX = secret.API_KEYS.GOOGLE_CX
 
+var itemsToCheck = 5
+
 
 
 function lookup(InputTitle, callback){
@@ -40,50 +42,60 @@ function lookup(InputTitle, callback){
             callback(new Error("No Results on Google for " + InputTitle))
         }
         
-        for (var i = 0; i < links.length; ++i) {
+        var tries = links.length
+        if (links.length > itemsToCheck)
+            links.length = itemsToCheck
+        
+        for (var i = 0; i < tries; ++i) {
           
             GoogleFound = true
 
-            var title = links[i].title
-            var reg = /\(.*\).*/;
-            var year = links[i].title.match(reg).toString();
-            
-            
-            console.log(title)
-            
-            
-            console.log(year)
-            title = title.replace(reg,"").toString()
-            year = year.split(")")[0].toString()
-            console.log(year)
+            try{
+                var title = links[i].title
+                var reg = /\(.*\).*/;
+                var year = links[i].title.match(reg).toString();
+                
+                
+                console.log(title)
+                
+                
+                console.log(year)
+                title = title.replace(reg,"").toString()
+                year = year.split(")")[0].toString()
+                console.log(year)
 
-            //Cannot currently handle episodes
-            reg = /TV Episode/;
-            if(year.match(reg)){
-                continue;
+                //Cannot currently handle episodes
+                reg = /TV Episode/;
+                if(year.match(reg)){
+                    continue;
+                }
+                
+                console.log(year)
+
+                reg = /TV Series /
+                var series = year.match(reg)
+                year = year.replace(reg,"")
+                console.log(year)
+                console.log(series)
+                if (series){
+                    reg = /\-.*\)/
+                
+                    //var year = year.replace(reg,"").toString()
+                }
+
+                year = year.split("–")[0].toString()
+                year = year.replace(/\(/,"").toString()
+                
+                console.log(year)
+                  
+                var IMDBid = links[i].link.match(/\d{7}/).toString()
+                return callback(err,'tt'+IMDBid,series,year,title)
+                GoogleFound = true
+                break
             }
-            
-            console.log(year)
-
-            reg = /TV Series /
-            var series = year.match(reg)
-            year = year.replace(reg,"")
-            console.log(year)
-            console.log(series)
-            if (series){
-                reg = /\-.*\)/
-            
-                //var year = year.replace(reg,"").toString()
+            catch (e){
+                continue
             }
-
-            year = year.split("–")[0].toString()
-            year = year.replace(/\(/,"").toString()
-            
-            console.log(year)
-              
-            var IMDBid = links[i].link.match(/\d{7}/).toString()
-            callback(err,'tt'+IMDBid,series,year,title)
-            break
             /*
             console.log(year)
             console.log(title)
@@ -105,6 +117,8 @@ function lookup(InputTitle, callback){
             break*/
 
         }
+        callback(new Error("No Results on Google for " + InputTitle))
+        
     });
 }
 
@@ -208,7 +222,15 @@ function netflixSearch(title,year,seriesIdx,callback2){
             if(error){
                 callback2(new Error("could not be found because Netflix search not responding"));
             }
-            var $ = cheerio.load(html);
+            try{
+                var $ = cheerio.load(html);
+                
+            }
+            catch (e)
+            {
+                callback2(error,'-1')
+                console.log("This is not on netflix");
+            }
             
             //console.log(html);
             $('div.iw-title').each(function(i,element){//.attr('data-title-path')

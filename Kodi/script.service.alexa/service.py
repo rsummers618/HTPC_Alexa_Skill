@@ -1,19 +1,34 @@
 import sys
 import os
-print os.path.realpath(__file__) + '/../lib/' 
-sys.path.append(os.path.realpath(__file__) + '/../lib/')
+#print os.path.realpath(__file__) + '/../lib/' 
+#sys.path.append(os.path.realpath(__file__) + '/../lib/')
 import time
 import random
+import xbmc
+import xbmcaddon
+import json
+import sports
+import traceback
+import urllib
+
+try:
+    from lib.ordereddict import orderedDict
+except:
+    print "python 2.7+"
+
+__addon__ = xbmcaddon.Addon()
+__cwd__=xbmc.translatePath(__addon__.getAddonInfo('path')).decode("utf-8")
+BASE_RESOURCE_PATH = os.path.join(__cwd__,'lib')
+sys.path.append(BASE_RESOURCE_PATH)
 
 from lib import boto3
 from lib import botocore
 from lib.boto3.session import Session
 from lib.botocore.handlers import disable_signing
 
-import xbmc
-import xbmcaddon
+
 addon = xbmcaddon.Addon('script.service.alexa')
-import json
+
 #from resources.utility import generic_utility
 
 sqs = boto3.resource('sqs',region_name='us-east-1')
@@ -104,7 +119,12 @@ def listen_pandora(message_attributes):#(stationname):
     time.sleep(1)
     menu_select()
     return
-
+    
+def get_current_selection():
+    #sendJSONRPC('XBMC.GetInfoLabels',{"labels":["System.CurrentWindow","System.CurrentControl"]}})
+   # http://192.168.1.169:8980/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22id%22:1,%22method%22:%22XBMC.GetInfoLabels%22,%22params%22:{%22labels%22:[%22System.CurrentWindow%22,%22System.CurrentControl%22,%22Container.Content%22,%22Container(1).CurrentItem%22,%22Listitem.Label%22]}}
+    return
+   
 def send_text(text,done):
     sendJSONRPC('Input.SendText',{'text':text,'done':done})
 
@@ -187,6 +207,12 @@ def watch_series_pulsar(title,tvdbid,seasonNum,episodeNum,episode_title):
     	return send_response_message("Opening, " + title + ", on pulsar",title + " played on pulsar")
     
  
+def get_currently_playing(message_attributes):
+    print "getting currently playing"
+    response = sendJSONRPC("Player.GetItem",{ "properties": ["title"], "playerid": GetPlayerID() })
+    print response
+    title = response.get("result",[]).get("item").get("title")
+    return tell_response_message("Currently Playing " + title, "Currently Playing " + title)
    
 def GetPlayerID():
     info = sendJSONRPC("Player.GetActivePlayers")
@@ -223,40 +249,38 @@ def play_movie(message_attributes):#(title,imdbid,netflixid):
         print movie['imdbnumber']
         if movie['imdbnumber'] == imdbid:
             print "playng " + movie['label'] + " " + str(movie['movieid'])
-            send_response_message("Playing the Movie, " + title + ", locally on Kodi",title + " played locally")
+            tell_response_message("Playing the Movie, " + title + ", locally on Kodi",title + " played locally")
             play_local_movie(movie['movieid'])
             return 
             
     print "netflixid is " + netflixid
     if netflixid == '-1':
         print "pulsar"
-        return watch_movie_pulsar(title,imdbid)
+        try:
+            return watch_movie_pulsar(title,imdbid)
+        except:
+            return tell_response_message("There was a problem playing with pulsar", "There was a problem playing with Pulsar")
     else:
-        return watch_netflix(title,netflixid)
+        try:
+            return watch_netflix(title,netflixid)
+        except:
+            return tell_response_message("There was a problem playing with Netflix", "There was a problem playing with Netflix")
 
 def play_local_movie(movieid):
     sendJSONRPC("Playlist.Clear", {"playlistid": 1})
-    #kodi.ClearVideoPlaylist()
     sendJSONRPC("Playlist.Add", {"playlistid": 1, "item": {"movieid": int(movieid)}})
-    #kodi.PrepMoviePlaylist(movieid)
     sendJSONRPC('GUI.ActivateWindow',{'window':"videos"})
-    #xbmc.GUI.ActivateWindow(window="videos")
     sendJSONRPC("Player.Open", {"item": {"playlistid": 1}})
-    #kodi.StartVideoPlaylist()
     return
 
 def play_local_show(episode_id):
     sendJSONRPC("Playlist.Clear", {"playlistid": 1})
-    #kodi.ClearVideoPlaylist()
     sendJSONRPC("Playlist.Add", {"playlistid": 1, "item": {"episodeid": int(episode_id)}})
-    #kodi.PrepMoviePlaylist(movieid)
     sendJSONRPC('GUI.ActivateWindow',{'window':"videos"})
-    #xbmc.GUI.ActivateWindow(window="videos")
     sendJSONRPC("Player.Open", {"item": {"playlistid": 1}})
-    #kodi.StartVideoPlaylist()
     return
 
-def play_series(message_attributes):#(title,imdbid,netflixid):
+def play_series(message_attributes):
 
 
     print message_attributes
@@ -289,18 +313,47 @@ def play_series(message_attributes):#(title,imdbid,netflixid):
     for show in shows:
         #print movie['imdbnumber']
         if show['imdbnumber'] == show_tvdbid:
-            if not season_number or not episode_number:
+        
+            if not season_number:
                 sendJSONRPC('GUI.ActivateWindow',{'window':"videos","parameters":["videodb://2/2/"+str(show['tvshowid'])]})
-                return send_response_message("Opening, " + title + ", locally on Kodi",title + " opened locally")
-            print "playing " + show['label']# + " " + str(show['movieid'])
+                return ask_response_message("Which Season?",title + " opened locally")
+                
+           
+                
+
+            elif not episode_number:
+                sendJSONRPC('GUI.ActivateWindow',{'window':"videos","parameters":["videodb://2/2/"+str(show['tvshowid'])+"/"+season_number]})
+                return ask_response_message("Which Episode?",title + " opened locally")
+            #print "playing " + show['label']# + " " + str(show['movieid'])
+            
+            
+            if season_number == 'next':
+            
+                episodes = sendJSONRPC('VideoLibrary.GetEpisodes',{'tvshowid':show['tvshowid'],'filter':{'field':'playcount', 'operator':'is','value':'0'},'properties':['season','episode']})['result']['episodes']
+                episode = random.choice(episodes)
+                play_local_show(episode['episodeid'])
+                return tell_response_message("Playing, " + title + "," + episode_title + ", locally on Kodi",title + " played locally")
+            
             episodes = sendJSONRPC('VideoLibrary.GetEpisodes',{'tvshowid':show['tvshowid'],'properties':['season','episode']})['result']['episodes']
-            print episodes
+            
+            if season_number == 'random':
+
+                episode = random.choice(episodes)
+                play_local_show(episode['episodeid'])
+                return tell_response_message("Playing, " + episode['showtitle'] + "," + episode['oriignaltitle'] + ", locally on Kodi",episode['showtitle'] + " played locally")
+              
+            elif season_number == 'latest':
+            
+                episode = episodes[-1]
+                return tell_response_message("Playing, " + title + "," + episode_title + ", locally on Kodi",title + " played locally")
+                
+                
             for episode in episodes: 
                 #print " checking " + season_number + " vs " + episode['season'] + " and " + episode_number + " vs " +episode['episode']
                 if episode['season'] == int(season_number) and episode['episode'] == int(episode_number):
                     print "playing " + show['label'] + " " + str(episode['episodeid'])
                     play_local_show(episode['episodeid'])
-                    return send_response_message("Playing, " + title + "," + episode_title + ", locally on Kodi",title + " played locally")
+                    return tell_response_message("Playing, " + title + "," + episode_title + ", locally on Kodi",title + " played locally")
                 
                      
 
@@ -308,9 +361,16 @@ def play_series(message_attributes):#(title,imdbid,netflixid):
     
     if netflixid == '-1':
         print "pulsar"
-        return watch_series_pulsar(title,show_tvdbid,season_number,episode_number,episode_title)
+        try:
+            return watch_series_pulsar(title,show_tvdbid,season_number,episode_number,episode_title)
+        except:
+            return tell_response_message("There was a problem playing with pulsar", "There was a problem playing with Pulsar")
+        
     else:
-        return watch_netflix(title,netflixid)
+        try:
+            return watch_netflix(title,netflixid)
+        except:
+            return tell_response_message("There was a problem playing with Netflix", "There was a problem playing with Netflix")
 
 
 def play_random_movie():
@@ -324,8 +384,28 @@ def play_random_movie():
 
 def play_sports_stream(message_attributes):
 
+
+    print "made play_sports_streams"
+    
+    print message_attributes
     send_response_message("good","good")
-    url=message_attributes['url']['StringValue']
+    # Try to play on Kodi
+    streamNum = 0
+    while 'url' + str(streamNum) in message_attributes:
+        print "Stream number + " + str(streamNum)
+    
+        urlin = message_attributes['url' + str(streamNum)]['StringValue']
+        url = sports.GetURL(urlin)
+        if url:
+            send_response_message("good","good")
+            return sendJSONRPC('Player.Open',{'item':{"file":url}})
+        streamNum = streamNum +1
+            
+    
+
+    
+
+    url=message_attributes['url0']['StringValue']
     
     os.system("pkill chrome")
     
@@ -338,7 +418,7 @@ def play_sports_stream(message_attributes):
     
     
     launch_chrome(url)
-
+    
     return 
 
 
@@ -358,31 +438,72 @@ def launch_chrome(url):
         #pyautogui.keyUp('ctrl')
         
     return
-
+    
+    
+def recent_episodes(message_attributes):
+    print "made it to recent episodes"
+    response = sendJSONRPC("VideoLibrary.GetRecentlyAddedEpisodes", { "properties": [ "title", "showtitle" ],"limits":{"end":5}})
+    print response
+    try:
+        episodes = response['result']['episodes']
+    except:
+        return  tell_response_message("You have no new Episodes","No new Episodes")
+    speech = "Your newest episodes are. "
+    for episode in episodes:
+        speech = speech + episode['showtitle'] +', ' + episode['title'] + '.'
+        
+    print speech
+    return  tell_response_message(speech,speech)
+    
+def recent_movies(message_attributes):
+    sendJSONRPC("VideoLibrary.GetRecentlyAddedMovies", { "properties": [ "title"],"limits":{"end":5 }})
+    try:
+        movies = response['result']['movies']
+    except:
+        return  tell_response_message("You have no new Movies","No new Movies")
+    speech = "Your newest episodes are. "
+    for movie in movies:
+        speech = speech + movie['title'] + '.'
+    return tell_response_message(speech,speech)
 
 def navigate(message_attributes):
     where = message_attributes['nav']['StringValue']
+    num = 1
+    if message_attributes['num']['StringValue']:
+        num = int(message_attributes['num']['StringValue'])
+        
     found = False
-    if where == 'up':
-        menu_up()
-        found = True
-    elif where == 'down':
-        menu_down()
-        found = True
-    elif where == 'left':
-        menu_left()
-        found = True
-    elif where == 'right':
-        menu_right()
-        found = True
+    for i in range (0,num):
+        
+        if where == 'up':
+            menu_up()
+            found = True
+        elif where == 'down':
+            menu_down()
+            found = True
+        elif where == 'left':
+            menu_left()
+            found = True
+        elif where == 'right':
+            menu_right()
+            found = True
+            
     if found:
         return send_response_message("OK","Navigate " + where + " received")
     else:
         return send_response_message("No navigation command for " + where,"Navigate " + where + " received")
 
-def send_response_message(voice,card):
+def ask_response_message(voice,card):
+    send_response_message(voice,card,"ask")
+      
+
+def tell_response_message(voice,card):
+    send_response_message(voice,card,"tell")
+   
+
+def send_response_message(voice,card,body = "OK"):
     queue_r.send_message(
-        MessageBody="OK",
+        MessageBody=body,
         MessageAttributes={
             'voice':{
                     'StringValue':voice,
@@ -404,7 +525,10 @@ message_router = {
     'addon': play_generic_addon,
     'navigate':navigate,
     'playpause':play_pause,
-    'stop':stop
+    'stop':stop,
+    'playing':get_currently_playing,
+    'recent_movies':recent_movies,
+    'recent_episodes':recent_episodes
 	#'music': play_music
 }
 
@@ -416,6 +540,9 @@ try:
 except:
     print "tried to restart too fast, cannot purge more than every 60 seconds"
     # Not enough time OR not valid
+
+    
+xbmc.executebuiltin('Notification(Alexa Service,Started, UPDATE SCHEMA!,5000,/icon.png)')
 
 while (1):  
     #print "trying again"
@@ -430,6 +557,7 @@ while (1):
             WaitTimeSeconds=5,
             AttributeNames=['*']
             )
+        
     except Exception as e:
         xbmc.executebuiltin('Notification(Alexa Service,Unable to recieve messages Check your Key and restart the service)')
         print "Unable to receive messages on queue"
@@ -444,8 +572,13 @@ while (1):
 
         print message[0].body
         print message[0].message_attributes
+        
+        
         try:
             message_router[message[0].body](message[0].message_attributes)
-        except:
-            send_response_message("Unknown Command " + message[0].body + " sent to Kodi","Unknown Command "+ message[0].body + " Received by Kodi")
+        except Exception as e:
+            print e
+            traceback.print_exc()
+            send_response_message("Error with command " + message[0].body + ". Make sure you'r schema is up to date","ERROR:" + str(e) + " "+ str(traceback.format_exc()))
+        
         message[0].delete()

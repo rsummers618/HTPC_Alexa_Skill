@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.service.alexa" name="Alexa Plugin" version="0.0.2" provider-name="rsummers618">
+<addon id="script.service.alexa" name="Alexa Plugin" version="0.0.3" provider-name="rsummers618">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
   </requires>

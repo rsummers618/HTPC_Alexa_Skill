@@ -1,12 +1,19 @@
 GetKeyIntent (/for) (/the/my) (code/key/password)
-PlayTVIntent (/to) (play/watch/show) {(breaking bad/parks and recreation/sherlock/Shawshank Redemptio/The Walking Deadn)|MediaName}
-PlayTVIntent (/to) (play/watch/show) {(breaking bad/parks and recreation/sherlock/Shawshank Redemption/The Walking Dead)|MediaName} Season {SeasonNum}
-PlayTVIntent (/to) (play/watch/show) {(breaking bad/parks and recreation/sherlock/Shawshank Redemption/The Walking Dead)|MediaName} Season {SeasonNum} Episode {EpisodeNum}
-PlayTVIntent (/to) (play/watch/show)  Season {SeasonNum}  of {(breaking bad/parks and recreation/sherlock/Shawshank Redemption/The Walking Dead)|MediaName}
-PlayTVIntent (/to) (play/watch/show)  Season {SeasonNum} Episode {EpisodeNum}  of {(breaking bad/parks and recreation/sherlock/Shawshank Redemption/The Walking Dead)|MediaName}
+PlayTVIntent (/to) (play/watch/show) {(breaking bad/parks and recreation/sherlock/Shawshank Redemption/The Walking Dead/The Dark Knight)|MediaName}
+PlayTVIntent (/to) (play/watch/show) {(breaking bad/parks and recreation/sherlock/Shawshank Redemption/The Walking Dead/The Dark Knight)|MediaName} Season {SeasonNum}
+PlayTVIntent (/to) (play/watch/show) {(breaking bad/parks and recreation/sherlock/Shawshank Redemption/The Walking Dead/The Dark Knight)|MediaName} Season {SeasonNum} Episode {EpisodeNum}
+PlayTVIntent (/to) (play/watch/show)  Season {SeasonNum}  of {(breaking bad/parks and recreation/sherlock/Shawshank Redemption/The Walking Dead/The Dark Knight)|MediaName}
+PlayTVIntent (/to) (play/watch/show)  Season {SeasonNum} Episode {EpisodeNum}  of {(breaking bad/parks and recreation/sherlock/Shawshank Redemption/The Walking Dead/The Dark Knight)|MediaName}
 PausePlayIntent (pause/play/start/resume)
-NewEpisodesIntent What (/are) my new (show/shows/episodes) (/are) (/of {(breaking bad/parks and recreation/sherlock/Shawshank Redemption/The Walking Dead)|ShowName})
 PlaySportsIntent (/to) (show/play/watch) the {(ducks/Red Wings/UCLA/Toronto Blue Jays)|MediaName} (game/match)
-NavigateIntent (/to) (navigate/move/go (/to)) {(home/up/down/left/videos/movies)|NavLocation}
-OpenAddonIntent (open/launch/play) (/{(Netflix/Formula One/Videos)|Directory} (with/on/in) ) {(Pulsar/pandki/pandora/NBC sports)|AddonName}
-StopIntent (cancel/stop)
+NavigateStop (/to) (navigate/move/go (/to)) {NavLocation} (/{NumVal})
+NavigateStop (quit/done)
+NavigateStart (/to) navigate
+NavigateContinue {NavLocation} (/{NumVal})
+StopIntent (/to) (cancel/stop)
+NumberIntent (/season(/ number)/episode(/ number)) {NumVal}
+WhatsPlayingIntent (/what/what is/what's/whats) ((/currently) (playing/showing)/(are we/am i) watching)
+RecentMoviesIntent what new movies do I have
+RecentMoviesIntent what are my new movies
+RecentEpisodesIntent what new (shows/episodes) do I have
+RecentEpisodesIntent what are my new (shows/episodes)

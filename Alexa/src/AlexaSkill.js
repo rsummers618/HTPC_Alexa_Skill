@@ -18,14 +18,17 @@ AlexaSkill.speechOutputType = {
 
 AlexaSkill.prototype.requestHandlers = {
     LaunchRequest: function (event, context, response) {
+        console.log("Launch Request")
         this.eventHandlers.onLaunch.call(this, event.request, event.session, response);
     },
 
     IntentRequest: function (event, context, response) {
+        console.log("Intent Request")
         this.eventHandlers.onIntent.call(this, event.request, event.session, response);
     },
 
     SessionEndedRequest: function (event, context) {
+        console.log("Session Ended")
         this.eventHandlers.onSessionEnded(event.request, event.session);
         context.succeed();
     }
@@ -129,6 +132,8 @@ function createSpeechObject(optionsParam) {
 
 Response.prototype = (function () {
     var buildSpeechletResponse = function (options) {
+        
+        var sessionAttributes = options.sessionAttributes
         var alexaResponse = {
             outputSpeech: createSpeechObject(options.output),
             shouldEndSession: options.shouldEndSession
@@ -147,6 +152,7 @@ Response.prototype = (function () {
         }
         var returnResult = {
                 version: '1.0',
+                //sessionAttributes:sessionAttributes,
                 response: alexaResponse
         };
         if (options.session && options.session.attributes) {
