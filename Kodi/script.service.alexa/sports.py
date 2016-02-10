@@ -49,9 +49,9 @@ import calendar, time
 
 
 
-def GetURL(el):
+def GetStreams(el):
 
-    print el
+    print "Sports getURL has " + el
 
     if 'blabseal.com' in el:
         url = Blabseal(el)
@@ -74,6 +74,7 @@ def GetURL(el):
         if url:
             return url
     elif 'nbastream.net' in el:
+        print "calling NBASTREAMS"
         url = Nbanhlstreams(el)
         if url:
             return url
@@ -279,6 +280,8 @@ def Streambot(url):
 
 
 def Nbanhlstreams(url):
+
+    print "NBANHLSTREAMS"
     try:
         if 'nba' in url:
             URL = 'http://www.nbastream.net/'
@@ -286,10 +289,15 @@ def Nbanhlstreams(url):
             URL = 'http://www.nhlstream.net/'
         elif 'nfl' in url:
             URL = 'http://www.livenflstream.net/'
+        print "GOTURL"
         html = GetURL(url)
+        print "GOTURL2"
         link = parseDOM(html, "iframe", ret="src")[0]
+        print "GOTURL3"
         html = GetURL(URL + link)
+        print "GOTURL4"
         link = parseDOM(html, "iframe", ret="src")[0]
+        print "GOTURL5"
         if 'streamup' in link:
             channel = link.split('/')[3]
             link = GetStreamup(channel)
@@ -665,5 +673,19 @@ def parseDOM(html, name=u"", attrs={}, ret=False):
 
     log("Done: " + repr(ret_lst), 3)
     return ret_lst
+    
+def GetURL(url, referer=None):
+    request = urllib2.Request(url)
+    request.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
+    if referer:
+    	request.add_header('Referer', referer)
+    try:
+    	response = urllib2.urlopen(request, timeout=5)
+    	html = response.read()
+    	return html
+    except:
+    	if 'reddit' in url:
+    		xbmcgui.Dialog().ok(__addonname__, 'Looks like '+url+' is down... Please try later...')
+    	return None
 
 

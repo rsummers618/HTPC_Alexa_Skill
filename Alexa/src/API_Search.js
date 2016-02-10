@@ -238,8 +238,9 @@ function netflixSearch(title,year,seriesIdx,callback2){
                 response = response.substring(7,16)
                 //console.log($(this).child().text())
                 console.log(response);
-                callback2(error,response)
                 NetflixFound = true
+                return callback2(error,response)
+                
             })
             if (NetflixFound == false){
                 console.log("This is not on netflix");

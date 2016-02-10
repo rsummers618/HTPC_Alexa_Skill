@@ -9,3 +9,7 @@ v0.0.3 (2016-2-8)
  - Added Stateful Episode selection
  - Added "recently added" movies and shows
  - Some Sports now play within Kodi
+v0.0.4 (2016-2-9)
+ - Fixed Sports parsing loop
+ - Added Android support
+ - Fixed Empty Library Bug

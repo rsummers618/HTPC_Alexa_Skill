@@ -11,6 +11,11 @@ import sports
 import traceback
 import urllib
 
+
+
+
+
+
 try:
     from lib.ordereddict import orderedDict
 except:
@@ -128,6 +133,18 @@ def get_current_selection():
 def send_text(text,done):
     sendJSONRPC('Input.SendText',{'text':text,'done':done})
 
+def info():
+    sendJSONRPC('Input.Info')  
+    
+def home():
+    sendJSONRPC('Input.Home')   
+
+def back():
+    sendJSONRPC('Input.Back')    
+    
+def context_menu():
+    sendJSONRPC('Input.ContextMenu')   
+    
 def menu_up():
     sendJSONRPC('Input.Up')
     
@@ -154,9 +171,14 @@ def watch_netflix(title,netflixid):
     #print url
     #webbrowser.get(chrome_path).open(url)
     
+    stringparam = ''
+    
     ## THIS METHOD USES KODI CHROME LAUNCHER TO LAUNCH FIREFOX IN KIOSK MODE
-
-    stringparam = '?kiosk=yes&mode=showSite&stopPlayback=yes&url=http://netflix.com/watch/'+netflixid
+    
+    if  xbmc.getCondVisibility("system.platform.android"):
+        stringparam = 'http://netflix.com/watch/' + netflixid
+    else:
+        stringparam = '?kiosk=yes&mode=showSite&stopPlayback=yes&url=http://netflix.com/watch/'+netflixid
 
     #headers = {'content-type':'application/json'};
     #payload = {'jsonrpc':'2.0','method':'Addons.ExecuteAddon','params':{'addonid':'plugin.program.chrome.launcher','params':[stringparam]}}
@@ -165,8 +187,8 @@ def watch_netflix(title,netflixid):
     #print stringparam
     #os.system("pkill chrome")
     #time.sleep(3)
-
-    sendJSONRPC('Addons.ExecuteAddon',{'addonid':'plugin.program.chrome.launcher','params':[stringparam]})
+    launch_chrome(stringparam)
+    #sendJSONRPC('Addons.ExecuteAddon',{'addonid':'plugin.program.chrome.launcher','params':[stringparam]})
     #xbmc.Addons.ExecuteAddon(addonid='plugin.program.chrome.launcher',params=[stringparam])
 
 
@@ -244,15 +266,17 @@ def play_movie(message_attributes):#(title,imdbid,netflixid):
 
     library = library = sendJSONRPC('VideoLibrary.GetMovies',{'properties':["imdbnumber"]})
     #library = xbmc.VideoLibrary.GetMovies(properties=["imdbnumber"])
-    movies = library['result']['movies']
-    for movie in movies:
-        print movie['imdbnumber']
-        if movie['imdbnumber'] == imdbid:
-            print "playng " + movie['label'] + " " + str(movie['movieid'])
-            tell_response_message("Playing the Movie, " + title + ", locally on Kodi",title + " played locally")
-            play_local_movie(movie['movieid'])
-            return 
-            
+    try:
+        movies = library['result']['movies']
+        for movie in movies:
+            print movie['imdbnumber']
+            if movie['imdbnumber'] == imdbid:
+                print "playng " + movie['label'] + " " + str(movie['movieid'])
+                tell_response_message("Playing the Movie, " + title + ", locally on Kodi",title + " played locally")
+                play_local_movie(movie['movieid'])
+                return 
+    except:
+        print "local movie playback failed"
     print "netflixid is " + netflixid
     if netflixid == '-1':
         print "pulsar"
@@ -308,55 +332,56 @@ def play_series(message_attributes):
     
     print library
     #return
-    
-    shows = library['result']['tvshows']
-    for show in shows:
-        #print movie['imdbnumber']
-        if show['imdbnumber'] == show_tvdbid:
-        
-            if not season_number:
-                sendJSONRPC('GUI.ActivateWindow',{'window':"videos","parameters":["videodb://2/2/"+str(show['tvshowid'])]})
-                return ask_response_message("Which Season?",title + " opened locally")
-                
-           
-                
+    try:
+        shows = library['result']['tvshows']
+        for show in shows:
+            #print movie['imdbnumber']
+            if show['imdbnumber'] == show_tvdbid:
+            
+                if not season_number:
+                    sendJSONRPC('GUI.ActivateWindow',{'window':"videos","parameters":["videodb://2/2/"+str(show['tvshowid'])]})
+                    return ask_response_message("Which Season?",title + " opened locally")
+                    
+               
+                    
 
-            elif not episode_number:
-                sendJSONRPC('GUI.ActivateWindow',{'window':"videos","parameters":["videodb://2/2/"+str(show['tvshowid'])+"/"+season_number]})
-                return ask_response_message("Which Episode?",title + " opened locally")
-            #print "playing " + show['label']# + " " + str(show['movieid'])
-            
-            
-            if season_number == 'next':
-            
-                episodes = sendJSONRPC('VideoLibrary.GetEpisodes',{'tvshowid':show['tvshowid'],'filter':{'field':'playcount', 'operator':'is','value':'0'},'properties':['season','episode']})['result']['episodes']
-                episode = random.choice(episodes)
-                play_local_show(episode['episodeid'])
-                return tell_response_message("Playing, " + title + "," + episode_title + ", locally on Kodi",title + " played locally")
-            
-            episodes = sendJSONRPC('VideoLibrary.GetEpisodes',{'tvshowid':show['tvshowid'],'properties':['season','episode']})['result']['episodes']
-            
-            if season_number == 'random':
-
-                episode = random.choice(episodes)
-                play_local_show(episode['episodeid'])
-                return tell_response_message("Playing, " + episode['showtitle'] + "," + episode['oriignaltitle'] + ", locally on Kodi",episode['showtitle'] + " played locally")
-              
-            elif season_number == 'latest':
-            
-                episode = episodes[-1]
-                return tell_response_message("Playing, " + title + "," + episode_title + ", locally on Kodi",title + " played locally")
+                elif not episode_number:
+                    sendJSONRPC('GUI.ActivateWindow',{'window':"videos","parameters":["videodb://2/2/"+str(show['tvshowid'])+"/"+season_number]})
+                    return ask_response_message("Which Episode?",title + " opened locally")
+                #print "playing " + show['label']# + " " + str(show['movieid'])
                 
                 
-            for episode in episodes: 
-                #print " checking " + season_number + " vs " + episode['season'] + " and " + episode_number + " vs " +episode['episode']
-                if episode['season'] == int(season_number) and episode['episode'] == int(episode_number):
-                    print "playing " + show['label'] + " " + str(episode['episodeid'])
+                if season_number == 'next':
+                
+                    episodes = sendJSONRPC('VideoLibrary.GetEpisodes',{'tvshowid':show['tvshowid'],'filter':{'field':'playcount', 'operator':'is','value':'0'},'properties':['season','episode']})['result']['episodes']
+                    episode = random.choice(episodes)
                     play_local_show(episode['episodeid'])
                     return tell_response_message("Playing, " + title + "," + episode_title + ", locally on Kodi",title + " played locally")
                 
-                     
+                episodes = sendJSONRPC('VideoLibrary.GetEpisodes',{'tvshowid':show['tvshowid'],'properties':['season','episode']})['result']['episodes']
+                
+                if season_number == 'random':
 
+                    episode = random.choice(episodes)
+                    play_local_show(episode['episodeid'])
+                    return tell_response_message("Playing, " + episode['showtitle'] + "," + episode['oriignaltitle'] + ", locally on Kodi",episode['showtitle'] + " played locally")
+                  
+                elif season_number == 'latest':
+                
+                    episode = episodes[-1]
+                    return tell_response_message("Playing, " + title + "," + episode_title + ", locally on Kodi",title + " played locally")
+                    
+                    
+                for episode in episodes: 
+                    #print " checking " + season_number + " vs " + episode['season'] + " and " + episode_number + " vs " +episode['episode']
+                    if episode['season'] == int(season_number) and episode['episode'] == int(episode_number):
+                        print "playing " + show['label'] + " " + str(episode['episodeid'])
+                        play_local_show(episode['episodeid'])
+                        return tell_response_message("Playing, " + title + "," + episode_title + ", locally on Kodi",title + " played locally")
+                    
+                         
+    except:
+        print "local show playback failed"
     print "netflixid is " + netflixid
     
     if netflixid == '-1':
@@ -393,13 +418,14 @@ def play_sports_stream(message_attributes):
     streamNum = 0
     while 'url' + str(streamNum) in message_attributes:
         print "Stream number + " + str(streamNum)
-    
         urlin = message_attributes['url' + str(streamNum)]['StringValue']
-        url = sports.GetURL(urlin)
-        if url:
-            send_response_message("good","good")
-            return sendJSONRPC('Player.Open',{'item':{"file":url}})
+        print "calling getURL"
+        url = sports.GetStreams(urlin)
         streamNum = streamNum +1
+        
+        print "URL is " + str(url)
+        if url:
+            return sendJSONRPC('Player.Open',{'item':{"file":url}})
             
     
 
@@ -413,8 +439,8 @@ def play_sports_stream(message_attributes):
         url = url.replace("watch?v=","/v/")
         url = url +  "&autoplay=1"
 
-    url = url + "#sports"
-    url = '?kiosk=yes&mode=showSite&stopPlayback=yes&url='+url
+    #url = url + "#sports"
+    #url = '?kiosk=yes&mode=showSite&stopPlayback=yes&url='+url
     
     
     launch_chrome(url)
@@ -424,9 +450,44 @@ def play_sports_stream(message_attributes):
 
 def launch_chrome(url):
 
+    '''
+    osWin = xbmc.getCondVisibility('system.platform.windows')
+    osOsx = xbmc.getCondVisibility('system.platform.osx')
+    osLinux = xbmc.getCondVisibility('system.platform.linux')
+    osAndroid = xbmc.getCondVisibility('System.Platform.Android')
+    url = 'http://www.google.fr/'
+
+    if osOsx:    
+        # ___ Open the url with the default web browser
+        xbmc.executebuiltin("System.Exec(open "+url+")")
+    elif osWin:
+        # ___ Open the url with the default web browser
+        xbmc.executebuiltin("System.Exec(cmd.exe /c start "+url+")")
+    elif osLinux and not osAndroid:
+        # ___ Need the xdk-utils package
+        xbmc.executebuiltin("System.Exec(xdg-open "+url+")") 
+    elif osAndroid:
+    # ___ Open media with standard android web browser
+    xbmc.executebuiltin("StartAndroidActivity(com.android.browser,android.intent.action.VIEW,,"+url+")")
+    '''
     
+    print "URL IS: " + url
     
-    sendJSONRPC('Addons.ExecuteAddon',{'addonid':'plugin.program.chrome.launcher','params':[url]})
+    if xbmc.getCondVisibility("system.platform.android"):
+        '''
+        intent = Intent();
+        intent.setPackage("com.android.chrome");
+        intent.setAction(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse(url));
+        currentActivity = cast('android.app.Activity', PythonActivity.mActivity)
+        currentActivity.startActivity(intent)
+        '''
+
+        #xbmc.executebuiltin("XBMC.StartAndroidActivity(com.android.chrome,,,"+url+")")
+        xbmc.executebuiltin("XBMC.StartAndroidActivity(com.android.chrome,android.intent.action.VIEW,,"+url+")")
+    else:
+        url = '?kiosk=yes&mode=showSite&stopPlayback=yes&url='+url
+        sendJSONRPC('Addons.ExecuteAddon',{'addonid':'plugin.program.chrome.launcher','params':[url]})
     #xbmc.Addons.ExecuteAddon(addonid='plugin.program.chrome.launcher',params=[url])
     #subprocess.Popen('\"/usr/bin/google-chrome\" --start-maximized --disable-translate --disable-new-tab-first-run --no-default-browser-check --no-first-run  --kiosk \"'+url+'\"', shell=True)
     
@@ -487,7 +548,22 @@ def navigate(message_attributes):
         elif where == 'right':
             menu_right()
             found = True
-            
+        elif where == 'select':
+            select()
+            found = True
+        elif where == 'info':
+            info()
+            found = True
+        elif where == 'home':
+            home()
+            found = True
+        elif where == 'menu':
+            context_menu()
+            found = True
+        elif where == 'back':
+            back()
+            found = True
+   
     if found:
         return send_response_message("OK","Navigate " + where + " received")
     else:
@@ -573,12 +649,12 @@ while (1):
         print message[0].body
         print message[0].message_attributes
         
-        
-        try:
+        message_router[message[0].body](message[0].message_attributes)
+        '''try:
             message_router[message[0].body](message[0].message_attributes)
         except Exception as e:
             print e
             traceback.print_exc()
             send_response_message("Error with command " + message[0].body + ". Make sure you'r schema is up to date","ERROR:" + str(e) + " "+ str(traceback.format_exc()))
-        
+        '''
         message[0].delete()
