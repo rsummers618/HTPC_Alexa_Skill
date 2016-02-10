@@ -4,6 +4,12 @@ This is an Alexa skill which allows you to control media on your Kodi Media Cent
 
 [Demo](https://vid.me/ZLU9)
 
+# Supported Speech Patterns
+
+[Please see Sample Utterances for examples](https://github.com/rsummers618/HTPC_Alexa_Skill/blob/master/Alexa/speechAssets/SampleUtterancesGenerator.txt)
+
+
+
 # Installation
 
 This skill is not yet published by Amazon, so you must create a developer account to enable the skill
@@ -52,24 +58,23 @@ Quite a bit, this is Alpha stage.
 
 Need to Get published so this can be more user friendly to install
 
-* Fix Full screen on sports
+* (1/2 complete) Full screen on sports
 * Better speech patterns
-* Fix some nagging queue issues
+* (complete)~~Fix some nagging queue issues~~
 * Create Generalized Addon navigator
-* Menu Navigation
-* State-ful navigation ("play Breaking Bad" -> "Which Season" -> "Season 3") etc
-* Generalized plugin detetion
+* (complete) ~~Menu Navigation~~
+* (complete) ~~State-ful navigation ("play Breaking Bad" -> "Which Season" -> "Season 3") etc~~
 * Music
-* AmazonPrime Streaming
+* Amazon Instant Video Streaming
 * Chromecast support?
 * Logitch Harmony support
-* Media Location Priorities
+* Media Location Priorities Setting
 
 #Known Issues
 
-* Basic navigation is slow
-* Generic addon launcher not fully implmented
-* "Problem with expected skills response" means server crash.  Need testing to find any more bugs (they show up in my logs)
-* Some shows launch incorrectly as Sports games
+* Android/Fire/OSX are untested, use at your own discretion (Boto3 and import errors sometimes)
+* "There was a Problem with expected skills response" means server crash. Please notify me.
+* Some shows starting with "the" launch incorrectly as Sports games
 * Response is sometimes out of sync with performed action
+* Users may not have up to date Schema, Can cause intent mismatches
 
