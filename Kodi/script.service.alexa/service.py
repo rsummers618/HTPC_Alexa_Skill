@@ -1,7 +1,5 @@
 import sys
 import os
-#print os.path.realpath(__file__) + '/../lib/' 
-#sys.path.append(os.path.realpath(__file__) + '/../lib/')
 import time
 import random
 import xbmc
@@ -12,71 +10,31 @@ import traceback
 import urllib
 
 
+socketIO = None
 
-
-
-
-try:
-    from lib.ordereddict import orderedDict
-except:
-    print "python 2.7+"
 
 __addon__ = xbmcaddon.Addon()
 __cwd__=xbmc.translatePath(__addon__.getAddonInfo('path')).decode("utf-8")
 BASE_RESOURCE_PATH = os.path.join(__cwd__,'lib')
 sys.path.append(BASE_RESOURCE_PATH)
 
-from lib import boto3
-from lib import botocore
-from lib.boto3.session import Session
-from lib.botocore.handlers import disable_signing
-
+import six
+from socketIO_client import SocketIO,LoggingNamespace
+import requests
+import websocket
 
 addon = xbmcaddon.Addon('script.service.alexa')
 
-#from resources.utility import generic_utility
 
-sqs = boto3.resource('sqs',region_name='us-east-1')
-sqs.meta.client.meta.events.register(
-    'choose-signer.sqs.*', disable_signing)
+user_id = addon.getSetting('authcode')
+socket_url = 'http://ec2-54-191-98-39.us-west-2.compute.amazonaws.com'
+socket_port= 3000
 
-
-queue_id = addon.getSetting('authcode')
-
-
-while len(queue_id) < 15:
+while len(user_id) < 15:
     xbmc.executebuiltin('Notification(Alexa Service,Please enter a valid key into the alexa service)')
     for i in range(60):
         time.sleep(1)
     queue_id = addon.getSetting('authcode')
-
-
-print "listening on "
-print 'https://sqs.us-east-1.amazonaws.com/414515788753/'+queue_id+'_s'
-
-queue_s = None
-queue_r = None
-
-
-def setQueues(queue_id):
-    global queue_s
-    global queue_r
-    try:
-        queue_s = sqs.Queue('https://sqs.us-east-1.amazonaws.com/414515788753/'+queue_id+'_s' )
-        queue_r = sqs.Queue('https://sqs.us-east-1.amazonaws.com/414515788753/'+queue_id+'_r' )
-    except:
-        xbmc.executebuiltin('Notification(Alexa Service,Unable to connect to Alexa Queue Please Check your Key and restart the service)')
-        print "Alexa unable to connect to queue"
-        for i in range(60):
-            time.sleep(1)
-        setQueues(queue_id)
-
-
-
-
-setQueues(queue_id)
-
-
 
 
 
@@ -578,9 +536,10 @@ def tell_response_message(voice,card):
    
 
 def send_response_message(voice,card,body = "OK"):
-    queue_r.send_message(
-        MessageBody=body,
-        MessageAttributes={
+
+    message = {
+        'MessageBody':'body',
+        'MessageAttributes':{
             'voice':{
                     'StringValue':voice,
                     'DataType':'String'
@@ -589,7 +548,9 @@ def send_response_message(voice,card,body = "OK"):
                     'StringValue':card,
                     'DataType':'String'
             }
-        })
+        }
+    }
+    socketIO.emit('client message',message)
     return
 
 
@@ -611,50 +572,39 @@ message_router = {
 
 #watch_netflix("test","test")
 
-try:
-    queue_s.purge()
-except:
-    print "tried to restart too fast, cannot purge more than every 60 seconds"
-    # Not enough time OR not valid
+
 
     
 xbmc.executebuiltin('Notification(Alexa Service,Started, UPDATE SCHEMA!,5000,/icon.png)')
 
-while (1):  
-    #print "trying again"
+def handle_disconnect(*args):
+    print "DISCONNECTED from SOCKETIO"
+    xbmc.executebuiltin('Notification(Alexa Service,Disconnect, UPDATE SCHEMA!,5000,/icon.png)')
+
+
+def execute_command(*args):
+    print "GOT THE SERVER MESSAGE"
+    arg = args[0]
+    print('execute_command', arg)
     
-    message = None
-    try:
+    #json_args = json.loads(args)
+    #print json_args
+    message_router[arg['message']['body']](arg['message']['message_attributes'])
 
+def reconnect():
+    global socketIO
+    socketIO.emit('add client',user_id)
 
-        message = queue_s.receive_messages(
-            MaxNumberOfMessages=1,
-            MessageAttributeNames=['*'],
-            WaitTimeSeconds=5,
-            AttributeNames=['*']
-            )
-        
-    except Exception as e:
-        xbmc.executebuiltin('Notification(Alexa Service,Unable to recieve messages Check your Key and restart the service)')
-        print "Unable to receive messages on queue"
-        print e
-        for i in range(60):
-            time.sleep(1)
-        
-        queue_id = addon.getSetting('authcode')
-        setQueues(queue_id)
+socketIO = SocketIO(socket_url,socket_port,LoggingNamespace)
+socketIO.emit('add client',user_id)
+socketIO.on('disconnect',handle_disconnect)
+socketIO.on('server message',execute_command)
+socketIO.on('reconnect',reconnect)
+socketIO.wait()
     
-    if message:
+    
+while(1):
+    socketIO.wait()
 
-        print message[0].body
-        print message[0].message_attributes
-        
-        message_router[message[0].body](message[0].message_attributes)
-        '''try:
-            message_router[message[0].body](message[0].message_attributes)
-        except Exception as e:
-            print e
-            traceback.print_exc()
-            send_response_message("Error with command " + message[0].body + ". Make sure you'r schema is up to date","ERROR:" + str(e) + " "+ str(traceback.format_exc()))
-        '''
-        message[0].delete()
+    #time.sleep(1)
+

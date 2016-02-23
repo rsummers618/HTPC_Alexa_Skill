@@ -2,10 +2,10 @@ var API_Search = require('./API_Search.js')
 var http = require("http");
 var request = require('request')
 var Snoocore = require('snoocore')
-var AWS = require('aws-sdk')
+//var AWS = require('aws-sdk')
 var TVDB = require("node-tvdb/compat")
 var secret= require('./secrets.js')
-
+var io = require('socket.io-client')
 
 
 var AWSAccountIds = secret.API_KEYS.AWSAccountIds
@@ -14,7 +14,7 @@ var AWSAccessKeyId = secret.API_KEYS.AWSAccessKeyId
 var AWSRegion = secret.API_KEYS.AWSRegion
 var TVDBAPI = secret.API_KEYS.TVDBAPI
 var SnoocoreKey = secret.API_KEYS.Snoocore
-
+var socket_key = secret.API_KEYS.socket_key
 
 // Until I can find the location of rogue error
 /*
@@ -27,14 +27,14 @@ process.on('uncaughtException', function (err) {
 
 
 console.log("starting")
-var sqs = new AWS.SQS({region:AWSRegion,
-                       secretAccessKey: AWSSercretAcccessKey,
-                       accessKeyId:AWSAccessKeyId
-                      });
-                      
-var sqs_unauth = new AWS.SQS()
 
 
+
+//var socket_host = 'localhost'
+var socket_host = 'http://ec2-54-191-98-39.us-west-2.compute.amazonaws.com'
+var socket_port = 3000
+socket = io.connect(socket_host + ":" + socket_port.toString());
+socket.on('connect', function(){console.log("Socket connected");});
 
 
 /**
@@ -81,6 +81,12 @@ PlayTV.prototype.eventHandlers.onSessionStarted = function (sessionStartedReques
     console.log("PlayTV onSessionStarted requestId: " + sessionStartedRequest.requestId
         + ", sessionId: " + session.sessionId);
     // any initialization logic goes here
+    session_id = session.user.userId.substring(60)
+    
+    
+    socket.emit('add server',{key:socket_key,username:session_id})
+
+    console.log("Adding server to websocket.  Username: " + session_id)
 };
 
 PlayTV.prototype.eventHandlers.onLaunch = function (launchRequest, session, response) {
@@ -99,187 +105,19 @@ PlayTV.prototype.eventHandlers.onSessionEnded = function (sessionEndedRequest, s
 };
 
 
-function CreateQueue(queue_id,read,callback){
-
-
-        
-        console.log("Creating Queue " + queue_id)
-        if (read){
-            var queue_policy = {
-                "Version": "2012-10-17",
-                "Id": "Queue1_Policy_UUID",
-                "Statement": 
-                {
-                   "Sid":"KodiUser",
-                   "Effect": "Allow",
-                   "Principal": {
-                        "AWS": "*"
-                    },
-                    "Action": ["sqs:SendMessage"],
-                    "Resource": "arn:aws:sqs:"+AWSRegion+":"+AWSAccountIds+":"+queue_id
-                }
-            }
-        }
-        else{
-            var queue_policy = {
-                "Version": "2012-10-17",
-                "Id": "Queue1_Policy_UUID",
-                "Statement": 
-                {
-                   "Sid":"KodiUser",
-                   "Effect": "Allow",
-                   "Principal": {
-                        "AWS": "*"
-                    },
-                    "Action": ["sqs:ReceiveMessage","sqs:DeleteMessage","sqs:PurgeQueue"],
-                    "Resource": "arn:aws:sqs:"+AWSRegion+":"+AWSAccountIds+":"+queue_id
-                }
-        
-            }
-        
-        }
-        var params = {QueueName: queue_id,
-            Attributes:{ Policy: JSON.stringify(queue_policy),
-                ReceiveMessageWaitTimeSeconds:'20'
-            }
-        }
-        sqs.createQueue(params,function(err,data){
-			if (err) {
-				console.error(err,err.stack);
-				return callback(err,data)
-			}
-			else{
-				return callback(err,data)
-			}
-        });
+function SendMessage(body,message_attributes){
+    socket.emit('server message',{body:body,message_attributes:message_attributes})
+    return
 }
-
-function SendMessage(queue_id,body,message_attributes,callback){
-    var message = {
-        MessageBody: body, 
-        QueueUrl: 'https://sqs.'+AWSRegion+'.amazonaws.com/'+AWSAccountIds+'/'+queue_id+'_s',
-        DelaySeconds: 0,
-        MessageAttributes: message_attributes
-    };
-    
-    sqs.sendMessage(message,function(err,data){
-		if (err) {
-			console.error(err,err.stack);
-			return callback(err,data)
-		}
-		else{
-			console.log("Sent Message To Queue: " + message.QueueUrl)
-			return callback(err,data)
-		}
-    });
-
-
-}
-
-function CreateQueues(queue_id,callback){
-    CreateQueue(queue_id+'_s',false,function(err,data){
-        if (err) {
-			console.log(err,err.stack);
-			return callback(err,data)
-		}
-        else{
-            //console.log(data)
-            CreateQueue(queue_id+'_r',true,function(err,data){
-                if (err) {
-					console.error(err,err.stack);
-					return callback(err,data)
-				}
-                else{
-                    return callback(err,data)
-                }
-           });
-        }
-    });
-             
-}
-
-
-
+   
 
 function SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,callback){
-
-    var params_rcv = {
-                MaxNumberOfMessages : 5,
-                QueueUrl: 'https://sqs.'+AWSRegion+'.amazonaws.com/'+AWSAccountIds+'/'+queue_id+'_r', 
-                WaitTimeSeconds : 0,
-                MessageAttributeNames: ['All'],
-                VisibilityTimeout: 3
-            };
-    //console.log("waiting for message resonse")
-    sqs.receiveMessage(params_rcv,function(err,data){
-        if (err){
-            console.error(err,err.stack)
-	    return callback(err,data)
-			
-	}
-	if(!data){
-	    console.log("No Extra messages to Delete")
-	}
-        else if (data.Messages){
-            console.log("We have " + data.Messages.length + " Extra Messages")
-            for (i = 0; i < data.Messages.length; i ++){
-                console.log("Extra Message Found")
-                console.log(data.Messages[i])
-                sqs.deleteMessage({QueueUrl:'https://sqs.'+AWSRegion+'.amazonaws.com/'+AWSAccountIds+'/'+queue_id+'_r',ReceiptHandle:data.Messages[i].ReceiptHandle},function(err,del){
-                    if(err){
-						console.log(err,err.stack)
-						return callback(err,data)
-					}
-                    else{
-                        console.log("deleted extra message")
-                    }
-                                
-                });
-            }
-        }
+    SendMessage(message_body,message_attributes)
+    socket.on('client message',function(data){
+        return callback (false,data.message)
     });
-
-    SendMessage(queue_id,message_body,message_attributes,function(err,ret){
-        if (err) console.log(err,err.stack);
-        else{
-            var params = {
-                MaxNumberOfMessages : 1,
-                QueueUrl: 'https://sqs.'+AWSRegion+'.amazonaws.com/'+AWSAccountIds+'/'+queue_id+'_r', 
-                WaitTimeSeconds : 2,
-                MessageAttributeNames: ['All'],
-            };
-            console.log("waiting for message response")
-            sqs.receiveMessage(params,function(err,data){
-                if(err){
-					console.log(err,err.stack)
-					return callback(err,data)
-				}
-                else{
-                    console.log(data)
-                    if(!data.Messages){
-                        console.error("Timeout waiting for response from Kodi")
-                        return callback(new Error("Timeout Waiting for response from Kodi"),"")
-                    }
-                    else{
-                        console.log(data.Messages[0])
-                        sqs.deleteMessage({QueueUrl:'https://sqs.'+AWSRegion+'.amazonaws.com/'+AWSAccountIds+'/'+queue_id+'_r',ReceiptHandle:data.Messages[0].ReceiptHandle},function(err,del){
-                            if(err){
-								console.log(err,err.stack)
-								return callback(err,data)
-							}
-                            else{
-                                return callback (err,data)
-                            }
-                        });
-                    }
-                    
-                }
-            });
-        }
-     
-     });
-
 }
+
 
 function GetIMDBID(input_title,callback){
     requestString = "http://www.omdbapi.com/?t="+input_title+"&y=&r=json"//&season="+intent.slots.SeasonNum.value
@@ -422,11 +260,12 @@ function sendMediaToQueue(response,queue_id,typeText,imdbid,title,netflixid,show
             response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
             return console.error(err.message);
         }
-
+        console.log("callback")
+        console.log(res)
             
         //retval = JSON.parse(res.body)
-        console.log(res.Messages[0].MessageAttributes)
-        response.tellWithCard(res.Messages[0].MessageAttributes.voice.StringValue,"TV Player",res.Messages[0].MessageAttributes.card.StringValue);
+        console.log(res.MessageAttributes)
+        response.tellWithCard(res.MessageAttributes.voice.StringValue,"TV Player",res.MessageAttributes.card.StringValue);
         //response.tellWithCard(retval.result.voice,"TV Player",retval.result.card);
 
     });
@@ -434,11 +273,7 @@ function sendMediaToQueue(response,queue_id,typeText,imdbid,title,netflixid,show
 }
 
 
-/* sqs.purgeQueue({QueueUrl:'https://sqs.'+AWSRegion+'.amazonaws.com/'+AWSAccountIds+'/'+queue_id+'_r'},function(err,data){
-                        if(err) console.log(err,err.stack)
-                        else console.log("queue purged")
-                        callback(err,data)
-                    });*/
+
 
 PlayTV.prototype.intentHandlers = {
     // register custom intent handlers
@@ -457,7 +292,6 @@ PlayTV.prototype.intentHandlers = {
         queue_id = session.user.userId.substring(60) 
         console.log("PlayTVIntent")
         
-
         
         var seasonNum
         if(intent.slots.SeasonNum)
@@ -582,7 +416,7 @@ PlayTV.prototype.intentHandlers = {
                 return response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
                 
             }
-            return response.tellWithCard(res.Messages[0].MessageAttributes.voice.StringValue,"TV Player",res.Messages[0].MessageAttributes.card.StringValue);
+            return response.tellWithCard(res.MessageAttributes.voice.StringValue,"TV Player",res.MessageAttributes.card.StringValue);
             
 
         });
@@ -609,7 +443,7 @@ PlayTV.prototype.intentHandlers = {
                 response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
                 return console.error(err.message);
             }
-            response.tellWithCard(res.Messages[0].MessageAttributes.voice.StringValue,"TV Player",res.Messages[0].MessageAttributes.card.StringValue);
+            response.tellWithCard(res.MessageAttributes.voice.StringValue,"TV Player",res.MessageAttributes.card.StringValue);
             
 
         });
@@ -662,7 +496,7 @@ PlayTV.prototype.intentHandlers = {
                 response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
                 return console.error(err.message);
             }
-            response.tellWithCard(res.Messages[0].MessageAttributes.voice.StringValue,"TV Player",res.Messages[0].MessageAttributes.card.StringValue);
+            response.tellWithCard(res.MessageAttributes.voice.StringValue,"TV Player",res.MessageAttributes.card.StringValue);
             
 
         });
@@ -681,7 +515,7 @@ PlayTV.prototype.intentHandlers = {
                 response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
                 return console.error(err.message);
             }
-            response.tellWithCard(res.Messages[0].MessageAttributes.voice.StringValue,"TV Player",res.Messages[0].MessageAttributes.card.StringValue);
+            response.tellWithCard(res.MessageAttributes.voice.StringValue,"TV Player",res.MessageAttributes.card.StringValue);
             
 
         });
@@ -699,7 +533,7 @@ PlayTV.prototype.intentHandlers = {
                 response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
                 return console.error(err.message);
             }
-            response.tellWithCard(res.Messages[0].MessageAttributes.voice.StringValue,"TV Player",res.Messages[0].MessageAttributes.card.StringValue);
+            response.tellWithCard(res.MessageAttributes.voice.StringValue,"TV Player",res.MessageAttributes.card.StringValue);
             
 
         });
@@ -716,7 +550,7 @@ PlayTV.prototype.intentHandlers = {
                 response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
                 return console.error(err.message);
             }
-            response.tellWithCard(res.Messages[0].MessageAttributes.voice.StringValue,"TV Player",res.Messages[0].MessageAttributes.card.StringValue);
+            response.tellWithCard(res.MessageAttributes.voice.StringValue,"TV Player",res.MessageAttributes.card.StringValue);
             
 
         });
@@ -753,7 +587,7 @@ PlayTV.prototype.intentHandlers = {
                 response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
                 return console.error(err.message);
             }
-            response.ask(res.Messages[0].MessageAttributes.voice.StringValue,res.Messages[0].MessageAttributes.card.StringValue);
+            response.ask(res.MessageAttributes.voice.StringValue,res.MessageAttributes.card.StringValue);
             
 
         });
@@ -797,7 +631,7 @@ PlayTV.prototype.intentHandlers = {
                 response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
                 return console.error(err.message);
             }
-            response.tellWithCard(res.Messages[0].MessageAttributes.voice.StringValue,"TV Player",res.Messages[0].MessageAttributes.card.StringValue);
+            response.tellWithCard(res.MessageAttributes.voice.StringValue,"TV Player",res.MessageAttributes.card.StringValue);
 
         });
     
