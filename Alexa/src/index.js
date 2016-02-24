@@ -35,6 +35,7 @@ var socket_host = 'http://ec2-54-191-98-39.us-west-2.compute.amazonaws.com'
 var socket_port = 3000
 socket = io.connect(socket_host + ":" + socket_port.toString());
 socket.on('connect', function(){console.log("Socket connected");});
+server_logged_in = false
 
 
 /**
@@ -81,12 +82,7 @@ PlayTV.prototype.eventHandlers.onSessionStarted = function (sessionStartedReques
     console.log("PlayTV onSessionStarted requestId: " + sessionStartedRequest.requestId
         + ", sessionId: " + session.sessionId);
     // any initialization logic goes here
-    session_id = session.user.userId.substring(60)
     
-    
-    socket.emit('add server',{key:socket_key,username:session_id})
-
-    console.log("Adding server to websocket.  Username: " + session_id)
 };
 
 PlayTV.prototype.eventHandlers.onLaunch = function (launchRequest, session, response) {
@@ -105,17 +101,41 @@ PlayTV.prototype.eventHandlers.onSessionEnded = function (sessionEndedRequest, s
 };
 
 
-function SendMessage(body,message_attributes){
+function SendMessage(session_id,body,message_attributes){
+    
+
+    //if (server_logged_in == false) {
+        socket.emit('add server',{key:socket_key,username:session_id})
+        console.log("Adding server to websocket.  Username: " + session_id)
+        server_logged_in = true 
+    //}
+    console.log("sent message " + body)
     socket.emit('server message',{body:body,message_attributes:message_attributes})
     return
 }
    
 
-function SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,callback){
-    SendMessage(message_body,message_attributes)
-    socket.on('client message',function(data){
-        return callback (false,data.message)
-    });
+function SendMessageAndAwaitResponse(session_id,message_body,message_attributes,callback){
+    SendMessage(session_id,message_body,message_attributes)
+    console.log("Waiting for response ")
+    var timeoutProtect = setTimeout(function() {
+
+        // Clear the local timer variable, indicating the timeout has been triggered.
+        timeoutProtect = null;
+
+        // Execute the callback with an error argument.
+        callback(new Error("No response received from the TV"));
+
+    }, 3000);//.get_remaining_time_in_millis() - 500);
+    if (timeoutProtect){
+        socket.removeAllListeners()
+        socket.on('client message',function(data){
+            clearTimeout(timeoutProtect)
+            console.log("Response received")
+            console.log(data.message)
+            return callback (false,data.message)
+        });
+    }
 }
 
 
@@ -280,10 +300,8 @@ PlayTV.prototype.intentHandlers = {
     
     "GetKeyIntent":function(intent,session,response){
         queue_id = session.user.userId.substring(60)
-        CreateQueues(queue_id,function(err,ret){
-            if(err) console.log(err,err.stack)
-            response.tellWithCard("I've sent your key to your Alexa app, Please enter this into Kodi", "TV player",queue_id);
-        });
+        response.tellWithCard("I've sent your key to your Alexa app, Please enter this into Kodi", "TV player",queue_id);
+
     },
     
     

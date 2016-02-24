@@ -87,7 +87,7 @@ io.on('connection', function (socket) {
   socket.on('client message', function (data) {
 	// MAKE SURE THIS EXISTS!
     console.log('client message')
-    console.log('data')
+    console.log(data)
     if (servers[socket.username]){
         servers[socket.username].emit('client message',{
             message:data
@@ -103,6 +103,11 @@ io.on('connection', function (socket) {
 	// MAKE SURE THIS EXISTS!
     console.log('server message')
     console.log(data)
+    if(!socket.username){
+        console.log("server not authenticated")
+        return
+    }
+    
     if (clients[socket.username]){
         clients[socket.username].emit('server message',{
             message:data
@@ -110,7 +115,7 @@ io.on('connection', function (socket) {
         console.log (" sent server messaage to " + clients[socket.username].id.toString())
     }
     else{
-        console.log('client ' + socket.username.toString() + ' doesnt exist')
+        console.log('client server doesnt exist')
     }
   });
 

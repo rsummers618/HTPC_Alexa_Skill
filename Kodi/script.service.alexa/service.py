@@ -1,3 +1,4 @@
+
 import sys
 import os
 import time
@@ -5,47 +6,50 @@ import random
 import xbmc
 import xbmcaddon
 import json
-import sports
+import stream
 import traceback
 import urllib
-
-
-socketIO = None
-
 
 __addon__ = xbmcaddon.Addon()
 __cwd__=xbmc.translatePath(__addon__.getAddonInfo('path')).decode("utf-8")
 BASE_RESOURCE_PATH = os.path.join(__cwd__,'lib')
 sys.path.append(BASE_RESOURCE_PATH)
 
-import six
+
 from socketIO_client import SocketIO,LoggingNamespace
-import requests
-import websocket
 
 addon = xbmcaddon.Addon('script.service.alexa')
-
-
 user_id = addon.getSetting('authcode')
 socket_url = 'http://ec2-54-191-98-39.us-west-2.compute.amazonaws.com'
 socket_port= 3000
+socketIO = None
+
+
+supported_movie_addons=['addon.video.pulsar','addon.video.quasar']
+supported_series_addons=['addon.video.pulsar','addon.video.quasar']
+
+movie_addons = ['quasar']
+series_addons = ['quasar']
+
+
+def setup_addons():
+    video_addons = sendJSONRPC('Addons.GetAddons',{"type":"xbmc.addon.video","content":"video","enabled":"true","properties":["path","name"]})
+    
+    print video_addons
+    return
+    for video in video_addons:
+        #print video
+        if video.name in supported_movie_addons:
+            movie_addons.add(video.name) 
+        if video.name in supported_series_addons:
+            series_addons.add(video.name)
+
 
 while len(user_id) < 15:
     xbmc.executebuiltin('Notification(Alexa Service,Please enter a valid key into the alexa service)')
     for i in range(60):
         time.sleep(1)
     queue_id = addon.getSetting('authcode')
-
-
-
-# MacOS
-#chrome_path = 'open -a /Applications/Google\ Chrome.app %s'
-
-# Windows
-#chrome_path = "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s"
-
-# Linux
-chrome_path = '/usr/bin/google-chrome %s'
 
 
 def sendJSONRPC(method,params=None):
@@ -58,7 +62,10 @@ def sendJSONRPC(method,params=None):
 
 
 def play_generic_addon(message_attributes):
-
+    addons = sendJSONRPC('Addons.GetAddons',{"enabled":true,"properties":["path","name"]})
+    for video in video_addons:
+        if message_attributes['addon'] in video.name:
+            print "FOUND IT"
     return
 
 def listen_pandora(message_attributes):#(stationname):
@@ -84,9 +91,9 @@ def listen_pandora(message_attributes):#(stationname):
     return
     
 def get_current_selection():
-    #sendJSONRPC('XBMC.GetInfoLabels',{"labels":["System.CurrentWindow","System.CurrentControl"]}})
+    item = sendJSONRPC('XBMC.GetInfoLabels',{"labels":["System.CurrentWindow","System.CurrentControl"]})
    # http://192.168.1.169:8980/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22id%22:1,%22method%22:%22XBMC.GetInfoLabels%22,%22params%22:{%22labels%22:[%22System.CurrentWindow%22,%22System.CurrentControl%22,%22Container.Content%22,%22Container(1).CurrentItem%22,%22Listitem.Label%22]}}
-    return
+    return item
    
 def send_text(text,done):
     sendJSONRPC('Input.SendText',{'text':text,'done':done})
@@ -120,7 +127,6 @@ def menu_select():
 
 def watch_netflix(title,netflixid):
 
-    #harmony_tv()
     print "received netflixID " + netflixid
 
     ## THIS METHOD OPENS IN CHROME, NON FULL SCREEN
@@ -129,14 +135,14 @@ def watch_netflix(title,netflixid):
     #print url
     #webbrowser.get(chrome_path).open(url)
     
-    stringparam = ''
+    #stringparam = ''
     
     ## THIS METHOD USES KODI CHROME LAUNCHER TO LAUNCH FIREFOX IN KIOSK MODE
     
-    if  xbmc.getCondVisibility("system.platform.android"):
-        stringparam = 'http://netflix.com/watch/' + netflixid
-    else:
-        stringparam = '?kiosk=yes&mode=showSite&stopPlayback=yes&url=http://netflix.com/watch/'+netflixid
+    #if  xbmc.getCondVisibility("system.platform.android"):
+    stringparam = 'http://netflix.com/watch/' + netflixid
+    #else:
+        #stringparam = '?kiosk=yes&mode=showSite&stopPlayback=yes&url=http://netflix.com/watch/'+netflixid
 
     #headers = {'content-type':'application/json'};
     #payload = {'jsonrpc':'2.0','method':'Addons.ExecuteAddon','params':{'addonid':'plugin.program.chrome.launcher','params':[stringparam]}}
@@ -153,44 +159,36 @@ def watch_netflix(title,netflixid):
     return send_response_message("Playing, " + title + ", on Netflix",title + " played on Netflix")
 
 
-def watch_movie_pulsar(title,imdbid):
+def watch_movie_addon(addon,title,imdbid):
+    sendJSONRPC('Player.Open',{'item':{"file":"plugin://plugin.video."+addon+"/movie/"+imdbid+"/play"}})
 
-    #harmony_tv()
-    print "received imdbid " + imdbid
-
-    sendJSONRPC('Player.Open',{'item':{"file":"plugin://plugin.video.pulsar/movie/"+imdbid+"/play"}})
-    #xbmc.Player.Open(item={"file":"plugin://plugin.video.pulsar/movie/"+imdbid+"/play"}) 
-
-    return send_response_message("Playing the Movie, " + title + ", on Pulsar",title + " played on Pulsar")
+    return send_response_message("Playing the Movie, " + title + ", on " + addon,title + " played on " + addon)
 
 
 
-def watch_series_pulsar(title,tvdbid,seasonNum,episodeNum,episode_title):
+def watch_series_addon(addon,title,tvdbid,seasonNum,episodeNum,episode_title):
 
-    #harmony_tv()
-    print "received showname " + title + " with tvdbid " + tvdbid
 
 
     if seasonNum and episodeNum:
-        sendJSONRPC('Player.Open',{'item':{"file":"plugin://plugin.video.pulsar/show/"+tvdbid+"/season/"+seasonNum+"/episode/"+episodeNum+"/play"}})
+        sendJSONRPC('Player.Open',{'item':{"file":"plugin://plugin.video."+addon+"/show/"+tvdbid+"/season/"+seasonNum+"/episode/"+episodeNum+"/play"}})
 
-    	return send_response_message("Playing, " + title + ", " + episode_title + " , on pulsar",title + " played on pulsar")
+    	return send_response_message("Playing, " + title + ", " + episode_title + " , on " +addon ,title + " played on " + addon)
 
     elif seasonNum:
-         sendJSONRPC('GUI.ActivateWindow',{"window":"videos","parameters":["plugin://plugin.video.pulsar/show/"+tvdbid+"/season/"+seasonNum+"/episodes"]})
+         sendJSONRPC('GUI.ActivateWindow',{"window":"videos","parameters":["plugin://plugin.video."+addon+"/show/"+tvdbid+"/season/"+seasonNum+"/episodes"]})
 
-    	 return send_response_message("Opening, " + title + ", on pulsar",title + " played on pulsar")
+    	 return send_response_message("Opening, " + title + ", on " + addon,title + " played on " + addon)
 
     else:
-        sendJSONRPC('GUI.ActivateWindow',{"window":"videos","parameters":["plugin://plugin.video.pulsar/show/"+tvdbid+"/seasons"]})
+        sendJSONRPC('GUI.ActivateWindow',{"window":"videos","parameters":["plugin://plugin.video."+addon+"/show/"+tvdbid+"/seasons"]})
 
-    	return send_response_message("Opening, " + title + ", on pulsar",title + " played on pulsar")
+    	return send_response_message("Opening, " + title + ", on " + addon,title + " played on " + addon)
     
  
 def get_currently_playing(message_attributes):
     print "getting currently playing"
     response = sendJSONRPC("Player.GetItem",{ "properties": ["title"], "playerid": GetPlayerID() })
-    print response
     title = response.get("result",[]).get("item").get("title")
     return tell_response_message("Currently Playing " + title, "Currently Playing " + title)
    
@@ -204,7 +202,6 @@ def GetPlayerID():
 
 
 def play_pause(message_attributes):
-    print "play Pause received"
     sendJSONRPC("Player.PlayPause", {"playerid":GetPlayerID()})
     send_response_message("Ok","Kodi Pause/Resumed")
     
@@ -212,7 +209,10 @@ def stop(message_attributes):
     sendJSONRPC("Player.Stop", {"playerid":GetPlayerID()})
     send_response_message("Ok","Kodi Stopped")
 
-
+def play_music(message_attributes):
+    return
+    
+    
 def play_movie(message_attributes):#(title,imdbid,netflixid):
 
     try:
@@ -235,18 +235,19 @@ def play_movie(message_attributes):#(title,imdbid,netflixid):
                 return 
     except:
         print "local movie playback failed"
-    print "netflixid is " + netflixid
-    if netflixid == '-1':
-        print "pulsar"
-        try:
-            return watch_movie_pulsar(title,imdbid)
-        except:
-            return tell_response_message("There was a problem playing with pulsar", "There was a problem playing with Pulsar")
-    else:
+        
+    if netflixid != '-1':
         try:
             return watch_netflix(title,netflixid)
         except:
             return tell_response_message("There was a problem playing with Netflix", "There was a problem playing with Netflix")
+        
+    else:
+        for addon in movie_addons:
+            try:
+                return watch_movie_addon(addon,title,imdbid)
+            except:
+                return tell_response_message("There was a problem playing with " + addon, "There was a problem playing with " + addon)
 
 def play_local_movie(movieid):
     sendJSONRPC("Playlist.Clear", {"playlistid": 1})
@@ -264,10 +265,7 @@ def play_local_show(episode_id):
 
 def play_series(message_attributes):
 
-
-    print message_attributes
-
-    
+    #print message_attributes
     title = message_attributes['title']['StringValue']
     imdbid = message_attributes['imdbid']['StringValue']
 
@@ -340,20 +338,22 @@ def play_series(message_attributes):
                          
     except:
         print "local show playback failed"
-    print "netflixid is " + netflixid
     
-    if netflixid == '-1':
-        print "pulsar"
-        try:
-            return watch_series_pulsar(title,show_tvdbid,season_number,episode_number,episode_title)
-        except:
-            return tell_response_message("There was a problem playing with pulsar", "There was a problem playing with Pulsar")
-        
-    else:
+    if netflixid != '-1':
         try:
             return watch_netflix(title,netflixid)
         except:
             return tell_response_message("There was a problem playing with Netflix", "There was a problem playing with Netflix")
+        
+    else:
+        for addon in series_addons:
+            try:
+                return watch_series_addon(addon, title,show_tvdbid,season_number,episode_number,episode_title)
+            except:
+                return tell_response_message("There was a problem playing with " + addon, "There was a problem playing with " + addon)
+        
+    
+    return tell_response_message("Couldn't find a source", "Couldn't find a source")
 
 
 def play_random_movie():
@@ -365,10 +365,8 @@ def play_random_movie():
     return jsonify(result={"status": 200})
 
 
-def play_sports_stream(message_attributes):
+def play_internet_stream(message_attributes):
 
-
-    print "made play_sports_streams"
     
     print message_attributes
     send_response_message("good","good")
@@ -378,16 +376,13 @@ def play_sports_stream(message_attributes):
         print "Stream number + " + str(streamNum)
         urlin = message_attributes['url' + str(streamNum)]['StringValue']
         print "calling getURL"
-        url = sports.GetStreams(urlin)
+        url = stream.GetStreams(urlin)
         streamNum = streamNum +1
         
         print "URL is " + str(url)
         if url:
             return sendJSONRPC('Player.Open',{'item':{"file":url}})
             
-    
-
-    
 
     url=message_attributes['url0']['StringValue']
     
@@ -396,10 +391,6 @@ def play_sports_stream(message_attributes):
     if "youtube" in url:
         url = url.replace("watch?v=","/v/")
         url = url +  "&autoplay=1"
-
-    #url = url + "#sports"
-    #url = '?kiosk=yes&mode=showSite&stopPlayback=yes&url='+url
-    
     
     launch_chrome(url)
     
@@ -408,54 +399,14 @@ def play_sports_stream(message_attributes):
 
 def launch_chrome(url):
 
-    '''
-    osWin = xbmc.getCondVisibility('system.platform.windows')
-    osOsx = xbmc.getCondVisibility('system.platform.osx')
-    osLinux = xbmc.getCondVisibility('system.platform.linux')
-    osAndroid = xbmc.getCondVisibility('System.Platform.Android')
-    url = 'http://www.google.fr/'
-
-    if osOsx:    
-        # ___ Open the url with the default web browser
-        xbmc.executebuiltin("System.Exec(open "+url+")")
-    elif osWin:
-        # ___ Open the url with the default web browser
-        xbmc.executebuiltin("System.Exec(cmd.exe /c start "+url+")")
-    elif osLinux and not osAndroid:
-        # ___ Need the xdk-utils package
-        xbmc.executebuiltin("System.Exec(xdg-open "+url+")") 
-    elif osAndroid:
-    # ___ Open media with standard android web browser
-    xbmc.executebuiltin("StartAndroidActivity(com.android.browser,android.intent.action.VIEW,,"+url+")")
-    '''
     
     print "URL IS: " + url
     
     if xbmc.getCondVisibility("system.platform.android"):
-        '''
-        intent = Intent();
-        intent.setPackage("com.android.chrome");
-        intent.setAction(Intent.ACTION_VIEW);
-        intent.setData(Uri.parse(url));
-        currentActivity = cast('android.app.Activity', PythonActivity.mActivity)
-        currentActivity.startActivity(intent)
-        '''
-
-        #xbmc.executebuiltin("XBMC.StartAndroidActivity(com.android.chrome,,,"+url+")")
         xbmc.executebuiltin("XBMC.StartAndroidActivity(com.android.chrome,android.intent.action.VIEW,,"+url+")")
     else:
         url = '?kiosk=yes&mode=showSite&stopPlayback=yes&url='+url
-        sendJSONRPC('Addons.ExecuteAddon',{'addonid':'plugin.program.chrome.launcher','params':[url]})
-    #xbmc.Addons.ExecuteAddon(addonid='plugin.program.chrome.launcher',params=[url])
-    #subprocess.Popen('\"/usr/bin/google-chrome\" --start-maximized --disable-translate --disable-new-tab-first-run --no-default-browser-check --no-first-run  --kiosk \"'+url+'\"', shell=True)
-    
-    #if not "youtube" in url:
-    #    time.sleep(5)
-        #pyautogui.keyDown('ctrl')
-    #    time.sleep(1)
-        #pyautogui.press('space')
-        #pyautogui.keyUp('ctrl')
-        
+        sendJSONRPC('Addons.ExecuteAddon',{'addonid':'plugin.program.chrome.launcher','params':[url]})     
     return
     
     
@@ -469,7 +420,7 @@ def recent_episodes(message_attributes):
         return  tell_response_message("You have no new Episodes","No new Episodes")
     speech = "Your newest episodes are. "
     for episode in episodes:
-        speech = speech + episode['showtitle'] +', ' + episode['title'] + '.'
+        speech = speech + episode['showtitle'] +', ' + episode['title'] + '.  '
         
     print speech
     return  tell_response_message(speech,speech)
@@ -480,9 +431,9 @@ def recent_movies(message_attributes):
         movies = response['result']['movies']
     except:
         return  tell_response_message("You have no new Movies","No new Movies")
-    speech = "Your newest episodes are. "
+    speech = "Your newest movies are: "
     for movie in movies:
-        speech = speech + movie['title'] + '.'
+        speech = speech + movie['title'] + '.  '
     return tell_response_message(speech,speech)
 
 def navigate(message_attributes):
@@ -558,7 +509,7 @@ message_router = {
     'movie': play_movie,
     'series': play_series,
     'pandora': listen_pandora,
-    'sports': play_sports_stream,
+    'sports': play_internet_stream,
     'addon': play_generic_addon,
     'navigate':navigate,
     'playpause':play_pause,
@@ -568,43 +519,45 @@ message_router = {
     'recent_episodes':recent_episodes
 	#'music': play_music
 }
-
-
-#watch_netflix("test","test")
-
-
-
     
-xbmc.executebuiltin('Notification(Alexa Service,Started, UPDATE SCHEMA!,5000,/icon.png)')
+xbmc.executebuiltin('Notification(Alexa Service,Started,5000,/icon.png)')
 
 def handle_disconnect(*args):
-    print "DISCONNECTED from SOCKETIO"
-    xbmc.executebuiltin('Notification(Alexa Service,Disconnect, UPDATE SCHEMA!,5000,/icon.png)')
+    xbmc.executebuiltin('Notification(Alexa Service,Disconnect, reconnecting!, 5000,/icon.png)')
 
 
 def execute_command(*args):
-    print "GOT THE SERVER MESSAGE"
     arg = args[0]
     print('execute_command', arg)
     
     #json_args = json.loads(args)
     #print json_args
-    message_router[arg['message']['body']](arg['message']['message_attributes'])
+    try:
+        message_router[arg['message']['body']](arg['message']['message_attributes'])
+    except Exception as e:
+        print e
+        traceback.print_exc()
+        send_response_message("Error with command " + message[0].body + ". Make sure your schema is up to date","ERROR:" + str(e) + " "+ str(traceback.format_exc()))
+        
 
 def reconnect():
     global socketIO
     socketIO.emit('add client',user_id)
 
+    
+    
+    
+#setup_addons()   
 socketIO = SocketIO(socket_url,socket_port,LoggingNamespace)
 socketIO.emit('add client',user_id)
 socketIO.on('disconnect',handle_disconnect)
 socketIO.on('server message',execute_command)
 socketIO.on('reconnect',reconnect)
-socketIO.wait()
+#socketIO.wait()
     
     
 while(1):
     socketIO.wait()
+    print "listening again"
 
     #time.sleep(1)
-
