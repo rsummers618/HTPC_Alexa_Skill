@@ -1,35 +1,3 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="repository.rsummers618" name="Alexa Addons" version="1.0" provider-name="rsummers618">
-	<extension point="xbmc.addon.repository" name="Addons for Alexa">
-		<info compressed="false">http://raw.github.com/rsummers618/HTPC_Alexa_Skill/master/Kodi/addons.xml</info>
-		<checksum>http://raw.github.com/rsummers618/HTPC_Alexa_Skill/master/Kodi/addons.xml.md5</checksum>
-		<datadir zip="true">http://raw.githubusercontent.com/rsummers618/HTPC_Alexa_Skill/master/Kodi/zips</datadir>
-	</extension>
-	<extension point="xbmc.addon.metadata">
-		<summary>Repo for Rsummers618 Alexa-Kodi Skills</summary>
-		<description>Download and install Alexa Kodi Skills</description>
-		<platform>all</platform>
-	</extension>
-</addon>
-
-<addon id="script.service.alexa" name="Alexa Plugin" version="0.0.4" provider-name="rsummers618">
-  <requires>
-    <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.simplejson" />
-  </requires>
-  <extension point="xbmc.service" library="service.py" start="login"/>
-  <extension point="xbmc.addon.metadata">
-    <summary lang="en_gb">Background service to allow Kodi to be controlled by your Amazon Echo</summary>
-    <description lang="en_gb">This script provides a backend that can be communicated to by the Alexa webservice.</description>
-    <disclaimer lang="en_gb"> This is in Alpha stage</disclaimer>
-    <language></language>
-    <platform>all</platform>
-    <license></license>
-    <forum></forum>
-    <website></website>
-    <email></email>
-    <source></source>
-  </extension>
-</addon>
 </addons>
