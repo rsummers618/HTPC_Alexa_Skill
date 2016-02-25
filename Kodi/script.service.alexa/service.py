@@ -4,26 +4,24 @@ import os
 import time
 import random
 import xbmc
-import xbmcaddon
 import json
 import stream
 import traceback
 import urllib
+from addon import ADDON, ADDON_NAME, ADDON_VER
+from logger import log
 
-__addon__ = xbmcaddon.Addon()
-__cwd__=xbmc.translatePath(__addon__.getAddonInfo('path')).decode("utf-8")
-BASE_RESOURCE_PATH = os.path.join(__cwd__,'lib')
-sys.path.append(BASE_RESOURCE_PATH)
-
-
+sys.path.append(os.path.join(os.path.dirname(__file__), 'lib'))
 from socketIO_client import SocketIO,LoggingNamespace
 
-addon = xbmcaddon.Addon('script.service.alexa')
-user_id = addon.getSetting('authcode')
+user_id = ADDON.getSetting('authcode')
 socket_url = 'http://ec2-54-191-98-39.us-west-2.compute.amazonaws.com'
 socket_port= 3000
 socketIO = None
 
+log.info('Script [%s] version [%s]' % (ADDON_NAME, ADDON_VER))
+log.info('remote:  \t%s:%s' % (socket_url, socket_port))
+log.info('authcode:\t%s' % user_id)
 
 supported_movie_addons=['addon.video.pulsar','addon.video.quasar']
 supported_series_addons=['addon.video.pulsar','addon.video.quasar']
@@ -32,11 +30,17 @@ movie_addons = ['quasar']
 series_addons = ['quasar']
 sports_addons = ['prosport']
 
+while len(user_id) < 15:
+    xbmc.executebuiltin('Notification(Alexa Service,Please enter a valid key into the alexa service)')
+    for i in range(60):
+        time.sleep(1)
+    user_id = ADDON.getSetting('authcode')
+
 
 def setup_addons():
     video_addons = sendJSONRPC('Addons.GetAddons',{"type":"xbmc.addon.video","content":"video","enabled":"true","properties":["path","name"]})
     
-    print video_addons
+    log.info(video_addons)
     return
     for video in video_addons:
         #print video
@@ -46,19 +50,12 @@ def setup_addons():
             series_addons.add(video.name)
 
 
-while len(user_id) < 15:
-    xbmc.executebuiltin('Notification(Alexa Service,Please enter a valid key into the alexa service)')
-    for i in range(60):
-        time.sleep(1)
-    queue_id = addon.getSetting('authcode')
-
-
 def sendJSONRPC(method,params=None):
     out = {"id":1,"jsonrpc":"2.0","method":method}
     if params:
         out["params"] = params
     sendstring = json.dumps(out)
-    print sendstring
+    log.info(sendstring)
     return json.loads(xbmc.executeJSONRPC(sendstring))
 
 
@@ -66,7 +63,7 @@ def play_generic_addon(message_attributes):
     addons = sendJSONRPC('Addons.GetAddons',{"enabled":true,"properties":["path","name"]})
     for video in video_addons:
         if message_attributes['addon'] in video.name:
-            print "FOUND IT"
+            log.info('\taddon found')
     return
 
 def listen_pandora(message_attributes):#(stationname):
@@ -127,41 +124,26 @@ def menu_select():
     sendJSONRPC('Input.Select')
 
 def watch_netflix(title,netflixid):
-
-    print "received netflixID " + netflixid
+    log.info('watch_netflix(%s)' % netflixid)
 
     ## THIS METHOD OPENS IN CHROME, NON FULL SCREEN
-    
+
     #url = 'http://netflix.com/watch/'+netflixid
     #print url
     #webbrowser.get(chrome_path).open(url)
-    
-    #stringparam = ''
-    
+
     ## THIS METHOD USES KODI CHROME LAUNCHER TO LAUNCH FIREFOX IN KIOSK MODE
-    
-    #if  xbmc.getCondVisibility("system.platform.android"):
-    stringparam = 'http://netflix.com/watch/' + netflixid
-    #else:
-        #stringparam = '?kiosk=yes&mode=showSite&stopPlayback=yes&url=http://netflix.com/watch/'+netflixid
-
-    #headers = {'content-type':'application/json'};
-    #payload = {'jsonrpc':'2.0','method':'Addons.ExecuteAddon','params':{'addonid':'plugin.program.chrome.launcher','params':[stringparam]}}
-    #print xbmc.JSONRPC.Ping() 
-    #xbmc.GUI.ActivateWindow(window="home")  
-    #print stringparam
-    #os.system("pkill chrome")
-    #time.sleep(3)
+    stringparam = 'http://netflix.com/watch/' + netflixid # rely on launch_chrome to format kiosk tokens as needed
     launch_chrome(stringparam)
-    #sendJSONRPC('Addons.ExecuteAddon',{'addonid':'plugin.program.chrome.launcher','params':[stringparam]})
-    #xbmc.Addons.ExecuteAddon(addonid='plugin.program.chrome.launcher',params=[stringparam])
-
 
     return send_response_message("Playing, " + title + ", on Netflix",title + " played on Netflix")
 
 
 def watch_movie_addon(addon,title,imdbid):
     send_response_message("Playing the Movie, " + title + ", on " + addon,title + " played on " + addon)
+
+    log.info('watch_movie_addon(%s, %s, %s)' % (addon, title, imdbid))
+
     sendJSONRPC('Player.Open',{'item':{"file":"plugin://plugin.video."+addon+"/movie/"+imdbid+"/play"}})
 
     return
@@ -171,7 +153,7 @@ def watch_movie_addon(addon,title,imdbid):
 def watch_series_addon(addon,title,tvdbid,tmdbid,seasonNum,episodeNum,episode_title):
 
 
-
+    log.info('watch_series_addon(%s, %s, %s, %s, %s, %s)' % (addon,title,tvdbid,seasonNum,episodeNum,episode_title))
 
     if seasonNum and episodeNum:
         send_response_message("Playing, " + title + ", " + episode_title + " , on " +addon ,title + " played on " + addon)
@@ -194,7 +176,7 @@ def watch_series_addon(addon,title,tvdbid,tmdbid,seasonNum,episodeNum,episode_ti
     
  
 def get_currently_playing(message_attributes):
-    print "getting currently playing"
+    log.info("get_currently_playing(..)")
     response = sendJSONRPC("Player.GetItem",{ "properties": ["title"], "playerid": GetPlayerID() })
     title = response.get("result",[]).get("item").get("title")
     return tell_response_message("Currently Playing " + title, "Currently Playing " + title)
@@ -209,10 +191,12 @@ def GetPlayerID():
 
 
 def play_pause(message_attributes):
+    log.info("play_pause(..)")
     sendJSONRPC("Player.PlayPause", {"playerid":GetPlayerID()})
     send_response_message("Ok","Kodi Pause/Resumed")
     
 def stop(message_attributes):
+    log.info("stop(..)")
     sendJSONRPC("Player.Stop", {"playerid":GetPlayerID()})
     send_response_message("Ok","Kodi Stopped")
 
@@ -222,13 +206,13 @@ def play_music(message_attributes):
     
 def play_movie(message_attributes):#(title,imdbid,netflixid):
 
-    print message_attributes
+    log.info("play_movie(..)")
 
     try:
         title = message_attributes['title']
         imdbid = message_attributes['imdbid']
     except Exception as e:
-        print e
+        log.info(e)
         traceback.print_exc()
         return send_response_message("Error Playing Movie on Kodi", "Error playing Movie on Kodi")
 
@@ -237,29 +221,30 @@ def play_movie(message_attributes):#(title,imdbid,netflixid):
     try:
         movies = library['result']['movies']
         for movie in movies:
-            print movie['imdbnumber']
+            log.info(movie['imdbnumber'])
             if movie['imdbnumber'] == imdbid:
-                print "playng " + movie['label'] + " " + str(movie['movieid'])
+                log.info("\tplaying " + movie['label'] + " " + str(movie['movieid']))
                 tell_response_message("Playing the Movie, " + title + ", locally on Kodi",title + " played locally")
                 play_local_movie(movie['movieid'])
                 return 
+
     except Exception as e:
-        print e
+        log.info(e)
         traceback.print_exc()
-        print "local movie playback failed"
+        log.info("\tlocal movie playback failed")
         
     if  'netflixid' in message_attributes and int(message_attributes['netflixid']) != -1:
         try:
             return watch_netflix(title,message_attributes['netflixid'])
         except:
-            print "Error: problem playing Netflix"
+            log.info("Error: problem playing Netflix")
             #return tell_response_message("There was a problem playing with Netflix", "There was a problem playing with Netflix")
         
     for addon in movie_addons:
         try:
             return watch_movie_addon(addon,title,imdbid)
         except Exception as e:
-            print e
+            log.info(e)
             traceback.print_exc()
             return tell_response_message("There was a problem playing with " + addon, "There was a problem playing with " + addon)
 
@@ -279,10 +264,14 @@ def play_local_show(episode_id):
 
 def play_series(message_attributes):
 
+
+    log.info("play_series(..)")
+
     title = message_attributes['title']
     imdbid = message_attributes['imdbid']
 
     show_tvdbid,show_tmdbid, episode_tvdbid, season_number, episode_number, episode_title = None,None,None,None,None,None
+
 
 
     if 'show_tvdbid' in message_attributes:
@@ -302,7 +291,7 @@ def play_series(message_attributes):
     library = sendJSONRPC('VideoLibrary.GetTVShows',{'properties':["imdbnumber"]})
     #library = xbmc.VideoLibrary.GetTVShows(properties=["imdbnumber"])
     
-    print library
+    #print library
     #return
     try:
         shows = library['result']['tvshows']
@@ -347,33 +336,34 @@ def play_series(message_attributes):
                 for episode in episodes: 
                     #print " checking " + season_number + " vs " + episode['season'] + " and " + episode_number + " vs " +episode['episode']
                     if episode['season'] == int(season_number) and episode['episode'] == int(episode_number):
-                        print "playing " + show['label'] + " " + str(episode['episodeid'])
+                        log.info("\tplaying " + show['label'] + " " + str(episode['episodeid']))
                         play_local_show(episode['episodeid'])
                         return tell_response_message("Playing, " + title + "," + episode_title + ", locally on Kodi",title + " played locally")
                     
                          
+
     except Exception as e:
-        print e
+        log.info(e)
         traceback.print_exc()
-        print "local show playback failed"
+        log.info("\tlocal show playback failed")
+
     
     if  'netflixid' in message_attributes and int(message_attributes['netflixid']) != -1:
         try:
             return watch_netflix(title,message_attributes['netflixid'])
         except:
-            print "Problem playing netflix"
+            log.info("Problem playing netflix")
             #return tell_response_message("There was a problem playing with Netflix", "There was a problem playing with Netflix")
-        
 
     for addon in series_addons:
         try:
             return watch_series_addon(addon, title,show_tvdbid,show_tmdbid,season_number,episode_number,episode_title)
         except Exception as e:
-            print e
+            log.info(e)
             traceback.print_exc()
             return tell_response_message("There was a problem playing with " + addon, "There was a problem playing with " + addon)
-        
-    
+
+    log.info("\tepisode source not found. Exiting")
     return tell_response_message("Couldn't find a source", "Couldn't find a source")
 
 
@@ -383,31 +373,32 @@ def play_random_movie():
     random_movie = random.choice(movies)
     play_local_movie(random_movie['movieid'])
 
-    return jsonify(result={"status": 200})
+    #return jsonify(result={"status": 200})
 
 
 def play_sports(message_attributes):
     for addon in sports_addons:
         #plugin://plugin.video.prosport/?away=Cleveland%20Cavaliers&home=Charlotte%20Hornets&mode=STREAMS&url=https%3a%2f%2fwww.reddit.com%2fr%2fnbastreams
         sendJSONRPC('GUI.ActivateWindow',{"window":"videos","parameters":["plugin://plugin.video."+addon+"?away="+message_attributes['away']+"&home="+message_attributes['home']+"&mode=STREAMS&url=https%3a%2f%2fwww.reddit.com%2fr%2f"+message_attributes['mode']+"streams"]})
-        print("acton finished finally...")
+        #print("acton finished finally...")
         send_response_message("Ok","OK")
 
 def play_internet_stream(message_attributes):
 
-    
-    print message_attributes
+    log.info("play_internet_stream(..)")
+    #print message_attributes
     send_response_message("good","good")
     # Try to play on Kodi
     streamNum = 0
     while 'url' + str(streamNum) in message_attributes:
-        print "Stream number + " + str(streamNum)
+        log.info("\tStream number + " + str(streamNum))
         urlin = message_attributes['url' + str(streamNum)]
-        print "calling getURL"
+        log.info("\tcalling getURL")
+
         url = stream.GetStreams(urlin)
         streamNum = streamNum +1
-        
-        print "URL is " + str(url)
+
+        log.info("\tURL is " + str(url))
         if url:
             return sendJSONRPC('Player.Open',{'item':{"file":url}})
             
@@ -427,8 +418,7 @@ def play_internet_stream(message_attributes):
 
 def launch_chrome(url):
 
-    
-    print "URL IS: " + url
+    log.info("launch_chrome(%s)" % url)
     
     if xbmc.getCondVisibility("system.platform.android"):
         xbmc.executebuiltin("XBMC.StartAndroidActivity(com.android.chrome,android.intent.action.VIEW,,"+url+")")
@@ -439,9 +429,10 @@ def launch_chrome(url):
     
     
 def recent_episodes(message_attributes):
-    print "made it to recent episodes"
+
+    log.info("recent_episodes()")
+
     response = sendJSONRPC("VideoLibrary.GetRecentlyAddedEpisodes", { "properties": [ "title", "showtitle" ],"limits":{"end":5}})
-    print response
     try:
         episodes = response['result']['episodes']
     except:
@@ -449,12 +440,15 @@ def recent_episodes(message_attributes):
     speech = "Your newest episodes are. "
     for episode in episodes:
         speech = speech + episode['showtitle'] +', ' + episode['title'] + '.  '
-        
-    print speech
+
+    log.info(speech)
     return  tell_response_message(speech,speech)
     
 def recent_movies(message_attributes):
-    sendJSONRPC("VideoLibrary.GetRecentlyAddedMovies", { "properties": [ "title"],"limits":{"end":5 }})
+
+    log.info("recent_movies(..)")
+
+    response = sendJSONRPC("VideoLibrary.GetRecentlyAddedMovies", { "properties": [ "title"],"limits":{"end":5 }})
     try:
         movies = response['result']['movies']
     except:
@@ -462,6 +456,8 @@ def recent_movies(message_attributes):
     speech = "Your newest movies are: "
     for movie in movies:
         speech = speech + movie['title'] + '.  '
+
+    log.info(speech)
     return tell_response_message(speech,speech)
 
 def navigate(message_attributes):
@@ -486,7 +482,7 @@ def navigate(message_attributes):
             menu_right()
             found = True
         elif where == 'select':
-            select()
+            menu_select()
             found = True
         elif where == 'info':
             info()
@@ -545,24 +541,28 @@ message_router = {
 xbmc.executebuiltin('Notification(Alexa Service,Started,5000,/icon.png)')
 
 def handle_disconnect(*args):
+    log.info('socketio:handle_disconnect()')
     xbmc.executebuiltin('Notification(Alexa Service,Disconnect, reconnecting!, 5000,/icon.png)')
 
 
 def execute_command(*args):
     arg = args[0]
-    print('execute_command', arg)
-    
+
+    log.info('socketio:execute_command()')
+    log.info(arg)
+
     #json_args = json.loads(args)
     #print json_args
     try:
         message_router[arg['message']['body']](arg['message']['message_attributes'])
     except Exception as e:
-        print e
+        log.info(e)
         traceback.print_exc()
         send_response_message("Error with command " + arg['message']['body'] + ". Make sure your schema is up to date","ERROR:" + str(e) + " "+ str(traceback.format_exc()))
         
 
 def reconnect():
+    log.info('socektio:reconnect()')
     global socketIO
     socketIO.emit('add client',user_id)
 
@@ -571,15 +571,19 @@ def reconnect():
     
 #setup_addons()   
 socketIO = SocketIO(socket_url,socket_port,LoggingNamespace)
+log.info('websocket object created')
+
 socketIO.emit('add client',user_id)
+log.info('\tclient added (%s)' % user_id)
+
 socketIO.on('disconnect',handle_disconnect)
 socketIO.on('server message',execute_command)
 socketIO.on('reconnect',reconnect)
+log.info('\tmessage hooks added')
 #socketIO.wait()
     
-    
+log.info('websocket listening')
 while(1):
     socketIO.wait()
-    print "listening again"
 
     #time.sleep(1)
