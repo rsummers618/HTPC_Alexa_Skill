@@ -30,6 +30,7 @@ supported_series_addons=['addon.video.pulsar','addon.video.quasar']
 
 movie_addons = ['quasar']
 series_addons = ['quasar']
+sports_addons = ['prosport']
 
 
 def setup_addons():
@@ -70,7 +71,7 @@ def play_generic_addon(message_attributes):
 
 def listen_pandora(message_attributes):#(stationname):
 
-    stationname = message_attributes['station']['StringValue']
+    stationname = message_attributes['station']
     
     #xbmc.GUI.ActivateWindow(window="videos",paramaters=['plugin://plugin.audio.pandoki/?play='+pandoraid])
     #pool = Pool(processes=1)
@@ -160,30 +161,36 @@ def watch_netflix(title,netflixid):
 
 
 def watch_movie_addon(addon,title,imdbid):
+    send_response_message("Playing the Movie, " + title + ", on " + addon,title + " played on " + addon)
     sendJSONRPC('Player.Open',{'item':{"file":"plugin://plugin.video."+addon+"/movie/"+imdbid+"/play"}})
 
-    return send_response_message("Playing the Movie, " + title + ", on " + addon,title + " played on " + addon)
+    return
 
 
 
-def watch_series_addon(addon,title,tvdbid,seasonNum,episodeNum,episode_title):
+def watch_series_addon(addon,title,tvdbid,tmdbid,seasonNum,episodeNum,episode_title):
+
 
 
 
     if seasonNum and episodeNum:
-        sendJSONRPC('Player.Open',{'item':{"file":"plugin://plugin.video."+addon+"/show/"+tvdbid+"/season/"+seasonNum+"/episode/"+episodeNum+"/play"}})
+        send_response_message("Playing, " + title + ", " + episode_title + " , on " +addon ,title + " played on " + addon)
+        sendJSONRPC('Player.Open',{'item':{"file":"plugin://plugin.video."+addon+"/show/"+tmdbid+"/season/"+seasonNum+"/episode/"+episodeNum+"/play"}})
 
-    	return send_response_message("Playing, " + title + ", " + episode_title + " , on " +addon ,title + " played on " + addon)
+        return
 
     elif seasonNum:
-         sendJSONRPC('GUI.ActivateWindow',{"window":"videos","parameters":["plugin://plugin.video."+addon+"/show/"+tvdbid+"/season/"+seasonNum+"/episodes"]})
 
-    	 return send_response_message("Opening, " + title + ", on " + addon,title + " played on " + addon)
+        send_response_message("Opening, " + title + ", on " + addon,title + " played on " + addon)
+        sendJSONRPC('GUI.ActivateWindow',{"window":"videos","parameters":["plugin://plugin.video."+addon+"/show/"+tmdbid+"/season/"+seasonNum+"/episodes"]})
+
+        return
 
     else:
-        sendJSONRPC('GUI.ActivateWindow',{"window":"videos","parameters":["plugin://plugin.video."+addon+"/show/"+tvdbid+"/seasons"]})
+        send_response_message("Opening, " + title + ", on " + addon,title + " played on " + addon)
+        sendJSONRPC('GUI.ActivateWindow',{"window":"videos","parameters":["plugin://plugin.video."+addon+"/show/"+tmdbid+"/seasons"]})
 
-    	return send_response_message("Opening, " + title + ", on " + addon,title + " played on " + addon)
+        return
     
  
 def get_currently_playing(message_attributes):
@@ -215,11 +222,14 @@ def play_music(message_attributes):
     
 def play_movie(message_attributes):#(title,imdbid,netflixid):
 
+    print message_attributes
+
     try:
-        title = message_attributes['title']['StringValue']
-        imdbid = message_attributes['imdbid']['StringValue']
-        netflixid = message_attributes['netflixid']['StringValue']
-    except:
+        title = message_attributes['title']
+        imdbid = message_attributes['imdbid']
+    except Exception as e:
+        print e
+        traceback.print_exc()
         return send_response_message("Error Playing Movie on Kodi", "Error playing Movie on Kodi")
 
     library = library = sendJSONRPC('VideoLibrary.GetMovies',{'properties':["imdbnumber"]})
@@ -233,21 +243,25 @@ def play_movie(message_attributes):#(title,imdbid,netflixid):
                 tell_response_message("Playing the Movie, " + title + ", locally on Kodi",title + " played locally")
                 play_local_movie(movie['movieid'])
                 return 
-    except:
+    except Exception as e:
+        print e
+        traceback.print_exc()
         print "local movie playback failed"
         
-    if netflixid != '-1':
+    if  'netflixid' in message_attributes and int(message_attributes['netflixid']) != -1:
         try:
-            return watch_netflix(title,netflixid)
+            return watch_netflix(title,message_attributes['netflixid'])
         except:
-            return tell_response_message("There was a problem playing with Netflix", "There was a problem playing with Netflix")
+            print "Error: problem playing Netflix"
+            #return tell_response_message("There was a problem playing with Netflix", "There was a problem playing with Netflix")
         
-    else:
-        for addon in movie_addons:
-            try:
-                return watch_movie_addon(addon,title,imdbid)
-            except:
-                return tell_response_message("There was a problem playing with " + addon, "There was a problem playing with " + addon)
+    for addon in movie_addons:
+        try:
+            return watch_movie_addon(addon,title,imdbid)
+        except Exception as e:
+            print e
+            traceback.print_exc()
+            return tell_response_message("There was a problem playing with " + addon, "There was a problem playing with " + addon)
 
 def play_local_movie(movieid):
     sendJSONRPC("Playlist.Clear", {"playlistid": 1})
@@ -265,23 +279,25 @@ def play_local_show(episode_id):
 
 def play_series(message_attributes):
 
-    #print message_attributes
-    title = message_attributes['title']['StringValue']
-    imdbid = message_attributes['imdbid']['StringValue']
+    title = message_attributes['title']
+    imdbid = message_attributes['imdbid']
 
-    show_tvdbid, episode_tvdbid, season_number, episode_number, episode_title = None,None,None,None,None
+    show_tvdbid,show_tmdbid, episode_tvdbid, season_number, episode_number, episode_title = None,None,None,None,None,None
 
-    netflixid = message_attributes['netflixid']['StringValue']
+
     if 'show_tvdbid' in message_attributes:
-        show_tvdbid = message_attributes['show_tvdbid']['StringValue']
+        show_tvdbid = str(message_attributes['show_tvdbid'])
+    if 'show_tmdbid' in message_attributes:
+        show_tmdbid = str(message_attributes['show_tmdbid'])
     if 'episode_tvdbid' in message_attributes:
-        episode_tvdbid = message_attributes['episode_tvdbid']['StringValue']
-    if 'season_number' in message_attributes:
-        season_number = message_attributes['season_number']['StringValue']
-    if 'episode_number' in message_attributes:
-        episode_number = message_attributes['episode_number']['StringValue']
-    if 'episode_title' in message_attributes:
-        episode_title = message_attributes['episode_title']['StringValue']
+        episode_tvdbid = str(message_attributes['episode_tvdbid'])
+    if 'seasonNum' in message_attributes:
+        season_number = message_attributes['seasonNum']
+    if 'episodeNum' in message_attributes:
+        episode_number = str(message_attributes['episodeNum'])
+    if 'episodeTitle' in message_attributes:
+        episode_title = str(message_attributes['episodeTitle'])
+
 
     library = sendJSONRPC('VideoLibrary.GetTVShows',{'properties':["imdbnumber"]})
     #library = xbmc.VideoLibrary.GetTVShows(properties=["imdbnumber"])
@@ -336,21 +352,26 @@ def play_series(message_attributes):
                         return tell_response_message("Playing, " + title + "," + episode_title + ", locally on Kodi",title + " played locally")
                     
                          
-    except:
+    except Exception as e:
+        print e
+        traceback.print_exc()
         print "local show playback failed"
     
-    if netflixid != '-1':
+    if  'netflixid' in message_attributes and int(message_attributes['netflixid']) != -1:
         try:
-            return watch_netflix(title,netflixid)
+            return watch_netflix(title,message_attributes['netflixid'])
         except:
-            return tell_response_message("There was a problem playing with Netflix", "There was a problem playing with Netflix")
+            print "Problem playing netflix"
+            #return tell_response_message("There was a problem playing with Netflix", "There was a problem playing with Netflix")
         
-    else:
-        for addon in series_addons:
-            try:
-                return watch_series_addon(addon, title,show_tvdbid,season_number,episode_number,episode_title)
-            except:
-                return tell_response_message("There was a problem playing with " + addon, "There was a problem playing with " + addon)
+
+    for addon in series_addons:
+        try:
+            return watch_series_addon(addon, title,show_tvdbid,show_tmdbid,season_number,episode_number,episode_title)
+        except Exception as e:
+            print e
+            traceback.print_exc()
+            return tell_response_message("There was a problem playing with " + addon, "There was a problem playing with " + addon)
         
     
     return tell_response_message("Couldn't find a source", "Couldn't find a source")
@@ -365,6 +386,13 @@ def play_random_movie():
     return jsonify(result={"status": 200})
 
 
+def play_sports(message_attributes):
+    for addon in sports_addons:
+        #plugin://plugin.video.prosport/?away=Cleveland%20Cavaliers&home=Charlotte%20Hornets&mode=STREAMS&url=https%3a%2f%2fwww.reddit.com%2fr%2fnbastreams
+        sendJSONRPC('GUI.ActivateWindow',{"window":"videos","parameters":["plugin://plugin.video."+addon+"?away="+message_attributes['away']+"&home="+message_attributes['home']+"&mode=STREAMS&url=https%3a%2f%2fwww.reddit.com%2fr%2f"+message_attributes['mode']+"streams"]})
+        print("acton finished finally...")
+        send_response_message("Ok","OK")
+
 def play_internet_stream(message_attributes):
 
     
@@ -374,7 +402,7 @@ def play_internet_stream(message_attributes):
     streamNum = 0
     while 'url' + str(streamNum) in message_attributes:
         print "Stream number + " + str(streamNum)
-        urlin = message_attributes['url' + str(streamNum)]['StringValue']
+        urlin = message_attributes['url' + str(streamNum)]
         print "calling getURL"
         url = stream.GetStreams(urlin)
         streamNum = streamNum +1
@@ -384,7 +412,7 @@ def play_internet_stream(message_attributes):
             return sendJSONRPC('Player.Open',{'item':{"file":url}})
             
 
-    url=message_attributes['url0']['StringValue']
+    url=message_attributes['url0']
     
     os.system("pkill chrome")
     
@@ -437,10 +465,10 @@ def recent_movies(message_attributes):
     return tell_response_message(speech,speech)
 
 def navigate(message_attributes):
-    where = message_attributes['nav']['StringValue']
+    where = message_attributes['nav']
     num = 1
-    if message_attributes['num']['StringValue']:
-        num = int(message_attributes['num']['StringValue'])
+    if message_attributes['num']:
+        num = int(message_attributes['num'])
         
     found = False
     for i in range (0,num):
@@ -491,14 +519,8 @@ def send_response_message(voice,card,body = "OK"):
     message = {
         'MessageBody':'body',
         'MessageAttributes':{
-            'voice':{
-                    'StringValue':voice,
-                    'DataType':'String'
-            },
-            'card':{
-                    'StringValue':card,
-                    'DataType':'String'
-            }
+            'voice':voice,
+            'card':card
         }
     }
     socketIO.emit('client message',message)
@@ -509,7 +531,7 @@ message_router = {
     'movie': play_movie,
     'series': play_series,
     'pandora': listen_pandora,
-    'sports': play_internet_stream,
+    'sports': play_sports,
     'addon': play_generic_addon,
     'navigate':navigate,
     'playpause':play_pause,
@@ -517,7 +539,7 @@ message_router = {
     'playing':get_currently_playing,
     'recent_movies':recent_movies,
     'recent_episodes':recent_episodes
-	#'music': play_music
+    #'music': play_music
 }
     
 xbmc.executebuiltin('Notification(Alexa Service,Started,5000,/icon.png)')
@@ -537,7 +559,7 @@ def execute_command(*args):
     except Exception as e:
         print e
         traceback.print_exc()
-        send_response_message("Error with command " + message[0].body + ". Make sure your schema is up to date","ERROR:" + str(e) + " "+ str(traceback.format_exc()))
+        send_response_message("Error with command " + arg['message']['body'] + ". Make sure your schema is up to date","ERROR:" + str(e) + " "+ str(traceback.format_exc()))
         
 
 def reconnect():

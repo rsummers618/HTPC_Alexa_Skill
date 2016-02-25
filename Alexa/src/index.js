@@ -15,6 +15,10 @@ var AWSRegion = secret.API_KEYS.AWSRegion
 var TVDBAPI = secret.API_KEYS.TVDBAPI
 var SnoocoreKey = secret.API_KEYS.Snoocore
 var socket_key = secret.API_KEYS.socket_key
+var TMDBAPI = secret.API_KEYS.TMDBAPI
+
+
+var MovieDB  = require('moviedb')(TMDBAPI)
 
 // Until I can find the location of rogue error
 /*
@@ -124,7 +128,7 @@ function SendMessageAndAwaitResponse(session_id,message_body,message_attributes,
         timeoutProtect = null;
 
         // Execute the callback with an error argument.
-        callback(new Error("No response received from the TV"));
+        return callback(new Error("can't communicate with TV"));
 
     }, 3000);//.get_remaining_time_in_millis() - 500);
     if (timeoutProtect){
@@ -151,8 +155,7 @@ function GetIMDBID(input_title,callback){
         }
 
         console.log(stringbody)
-           
-        var seriesIdx = '1'
+
         var body = JSON.parse(stringbody)
         if (body.Response == "False"){
 			console.log("OMDB search failed, Trying Google")
@@ -175,7 +178,6 @@ function GetIMDBID(input_title,callback){
 				var series = false
 				var title = body.Title
 				if (body.Type=="series"){
-					seriesIdx = '3'
 					series = true
                 }
 			}
@@ -188,35 +190,33 @@ function GetIMDBID(input_title,callback){
     });
 }
 
-function SelectEpisode(queue_id,response,session,imdbid,title,year,show_tvdbid,episodeNum,seasonNum){
-    
-    session.attributes.imdbid = imdbid
-    session.attributes.title = title
-    session.attributes.show_tvdbid = show_tvdbid
-    session.attributes.episodeNum = episodeNum
-    session.attributes.seasonNum = seasonNum
-    if (!seasonNum){
+function SelectEpisode(queue_id,response,session,media){
+    console.log("Printing media")
+    console.log(media)
+    if(!session.attributes)
+        session.attributes = {}
+    session.attributes.media = media
+    if (!media.seasonNum){
         session.attributes.series = true
         session.attributes.whichSeason=true
         //SendMessage(queue_id,body,message_attributes,callback)
-        return response.ask("What Season?", "Which season of " + title + " would you like to play?");
+        return response.ask("What Season?", "Which season of " + media.title + " would you like to play?");
     }    
-    if (!episodeNum){
+    if (!media.episodeNum){
         session.attributes.series = true
         session.attributes.whichEpisode=true
-        return response.ask("Which Episode?", "Which episode from season" + seasonNum.toString() + " of " + title + " would you like to play?");
+        return response.ask("Which Episode?", "Which episode from season" + media.seasonNum.toString() + " of " + media.title + " would you like to play?");
     }
     
     //console.log(res)
-    
-    console.log(show_tvdbid)
-    console.log(year)
-   
+
+    console.log("show tvdbid: " + media.show_tvdbid)
 
     var tvdb = new TVDB(TVDBAPI)
-    tvdb.getEpisodesById(show_tvdbid, function(error, res){
+    tvdb.getEpisodesById(media.show_tvdbid, function(error, res){
         if (error){
-            response.tellWithCard(title + " " + err, "TV player", err);
+            console.log(error)
+            response.tellWithCard(media.title + " " + error, "TV player", error);
         }
 
         //console.log(res)
@@ -224,21 +224,20 @@ function SelectEpisode(queue_id,response,session,imdbid,title,year,show_tvdbid,e
         for (i = 0; i < res.length;i ++){
             episode =  res[i]
             //console.log(i)
-            if (parseInt(episode.EpisodeNumber) == parseInt(episodeNum) && parseInt(episode.SeasonNumber) == parseInt(seasonNum)){
+            if (parseInt(episode.EpisodeNumber) == parseInt(media.episodeNum) && parseInt(episode.SeasonNumber) == parseInt(media.seasonNum)){
                 found = true
-                episode_tvdbid = episode.id
-                year = episode.FirstAired
-                 year = year.split('-')[0]
-                episodeTitle =  episode.EpisodeName
+                media.episode_tvdbid = episode.id
+                media.year = episode.FirstAired.split('-')[0]
+                media.episodeTitle =  episode.EpisodeName
                 console.log(episode)
 
-                API_Search.netflixSearch(title + ' ' + episodeTitle,year,'4',function(err,netflixid){
+                API_Search.netflixSearch(media.title + ' ' + media.episodeTitle,media.year,'4',function(err,netflixid){
                     if (err){
                         response.tellWithCard(title + " " + err, "TV player", err);
                     }
-
+                    media.netflixid = netflixid
                     console.log(netflixid)
-                    return sendMediaToQueue(response,queue_id,"series",imdbid,title,netflixid,show_tvdbid,episode_tvdbid,seasonNum,episodeNum,episodeTitle)
+                    return sendMediaToQueue(response,queue_id,media)
                 });
             }
         
@@ -253,39 +252,25 @@ function SelectEpisode(queue_id,response,session,imdbid,title,year,show_tvdbid,e
        
 }
 
-function sendMediaToQueue(response,queue_id,typeText,imdbid,title,netflixid,show_tvdbid,episode_tvdbid,season_number,episode_number,episode_title){
-    
-    if (!imdbid){imdbid = '-1'}
-    
-    message_attributes = {}
-    if(imdbid){message_attributes.imdbid={DataType:'String',StringValue:imdbid}}
-    if(title){message_attributes.title={DataType: 'String',StringValue: title}}
-    if(netflixid){message_attributes.netflixid={DataType: 'String',StringValue: netflixid}}
-    if(show_tvdbid){message_attributes.show_tvdbid={DataType: 'String',StringValue: show_tvdbid}}
-    if(episode_tvdbid){message_attributes.episode_tvdbid={DataType: 'String',StringValue: episode_tvdbid}}
-    if(season_number){message_attributes.season_number={DataType: 'String',StringValue: season_number}}
-    if(episode_number){message_attributes.episode_number={DataType: 'String',StringValue: episode_number}}
-    if(episode_title){message_attributes.episode_title={DataType: 'String',StringValue: episode_title}}
-           
-    
-   
-        
-    message_body = typeText
+function sendMediaToQueue(response,queue_id,media){
+
+    if (media.series){
+        message_body = 'series'
+    }else{
+        message_body = 'movie'
+    }
         
 
 
-    SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){    
+    SendMessageAndAwaitResponse(queue_id,message_body,media,function(err,res){
         if (err){
             console.log(res)
             response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
             return console.error(err.message);
         }
-        console.log("callback")
-        console.log(res)
-            
-        //retval = JSON.parse(res.body)
+
         console.log(res.MessageAttributes)
-        response.tellWithCard(res.MessageAttributes.voice.StringValue,"TV Player",res.MessageAttributes.card.StringValue);
+        response.tellWithCard(res.MessageAttributes.voice,"TV Player",res.MessageAttributes.card);
         //response.tellWithCard(retval.result.voice,"TV Player",retval.result.card);
 
     });
@@ -309,15 +294,18 @@ PlayTV.prototype.intentHandlers = {
     "PlayTVIntent": function (intent, session, response) {
         queue_id = session.user.userId.substring(60) 
         console.log("PlayTVIntent")
+
+
+        var media = {}
         
-        
-        var seasonNum
+        media.seasonNum
         if(intent.slots.SeasonNum)
-            seasonNum = intent.slots.SeasonNum.value
+            media.seasonNum = intent.slots.SeasonNum.value
+            console.log("season Num: " + media.seasonNum)
         var episodeNum
         if(intent.slots.EpisodeNum)
-            episodeNum = intent.slots.EpisodeNum.value
-        
+            media.episodeNum = intent.slots.EpisodeNum.value
+            console.log("episode Num: " + media.episodeNum)
         
         
         GetIMDBID(intent.slots.MediaName.value, function(err,imdbid,year,series,title){
@@ -325,27 +313,24 @@ PlayTV.prototype.intentHandlers = {
                 return response.tellWithCard( err, "TV player", err);
             }
 			try{
+			    media.imdbid = imdbid
+			    media.year = year
+			    media.series = series
+			    media.title = title
+
 				console.log("imdbid: " + imdbid + " year: " + year)
+				console.log("title: " + title)
                 console.log("series: " + series)
-                if(series){
-                    console.log("This is a series")
-                }
-                else{
-                    console.log("This is a movie")
-                }
+
 			}
 			catch(e){
 				return response.tellWithCard(e,"TV Player",e)
 			}
-		
-            if (series)
-                seriesIdx = '3'
 
-            var show_tvdbid
-            var episode_tvdbid
-            var episodeTitle = ''
 
+            numDone = 2;
             if (series){
+                console.log("This is a series")
                 var tvdb = new TVDB(TVDBAPI)
                 //tvdbRequestString = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid="+imdbid
                 tvdb.getSeriesByRemoteId(imdbid,function(error,res){
@@ -357,21 +342,51 @@ PlayTV.prototype.intentHandlers = {
                     }
                     
                     //// INSERTING HERE
-                    show_tvdbid = res.id
-                    return SelectEpisode(queue_id,response, session,imdbid,title,year,show_tvdbid,episodeNum,seasonNum)
+                    media.show_tvdbid = res.id
+                    return done()
+                    //return SelectEpisode(queue_id,response, session,media)
                 });
+
+                var mdb =  MovieDB
+                mdb.find({id:imdbid,external_source:'imdb_id'}, function(err,res){
+                    if (err){
+                        return response.tellWithCard(title + " " + err, "TV player", err);
+                    }
+                    if (!res){
+
+                        return response.tellWithCard("Couldn't Contact The MovieDB, try again later", "TV player", "Error contacting TheMovieDB");
+                    }
+                    if (res.tv_results.length > 0){
+                        console.log("MOVIE DB: " + res.tv_results[0].id)
+                        media.show_tmdbid = res.tv_results[0].id
+                    }else{
+                        console.log("MOVIE DB: NOT FOUND")
+                    }
+                    return done()
+                    //return SelectEpisode(queue_id,response, session,imdbid,media)
+                });
+
+                function done(){
+                    numDone = numDone -1
+                    if (numDone <= 0){
+                        return SelectEpisode(queue_id,response, session,media)
+                    }
+                }
                 
             }
             else{
-                
-                year = year.split('-')[0]
+                console.log("This is a movie")
+                media.year = year.split('-')[0]
+
+                console.log("year: " + year)
 
                 API_Search.netflixSearch(title,year,'1',function(err,netflixid){
                     if (err){
                         response.tellWithCard(title + " " + err, "TV player", err);
                     }
+                    media.netflixid = netflixid
                     console.log(netflixid)
-                    return sendMediaToQueue(response,queue_id,"movie",imdbid,title,netflixid,show_tvdbid,episode_tvdbid,seasonNum,episodeNum,false)
+                    return sendMediaToQueue(response,queue_id,media)
                 });
             }
             
@@ -386,10 +401,7 @@ PlayTV.prototype.intentHandlers = {
         queue_id = session.user.userId.substring(60)
         
         message_attributes = {
-            station: {
-                DataType: 'String',
-                StringValue: intent.slots.MediaName.value
-            }
+            station:intent.slots.MediaName.value
         }
                 
         message_body = "pandora"
@@ -399,8 +411,8 @@ PlayTV.prototype.intentHandlers = {
                 response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
                 return console.error(err.message);
             }
-            
-            
+
+
             response.tellWithCard("Playing someone on pandora","TV Player","Playing something on pandora");
         });
     
@@ -420,10 +432,7 @@ PlayTV.prototype.intentHandlers = {
            return response.tellWithCard("You Must specify a show", "TV player", "No show named, New Episodes");
         }
         message_attributes = {
-            show: {
-                DataType: 'String',
-                StringValue: intent.slots.ShowName.value
-            }
+            show:intent.slots.ShowName.value
         }
                 
         message_body = "NewEpisodes"
@@ -434,7 +443,7 @@ PlayTV.prototype.intentHandlers = {
                 return response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
                 
             }
-            return response.tellWithCard(res.MessageAttributes.voice.StringValue,"TV Player",res.MessageAttributes.card.StringValue);
+            return response.tellWithCard(res.MessageAttributes.voice,"TV Player",res.MessageAttributes.card);
             
 
         });
@@ -461,7 +470,7 @@ PlayTV.prototype.intentHandlers = {
                 response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
                 return console.error(err.message);
             }
-            response.tellWithCard(res.MessageAttributes.voice.StringValue,"TV Player",res.MessageAttributes.card.StringValue);
+            response.tellWithCard(res.MessageAttributes.voice,"TV Player",res.MessageAttributes.card);
             
 
         });
@@ -472,20 +481,20 @@ PlayTV.prototype.intentHandlers = {
     "NumberIntent": function (intent, session, response) {
         queue_id = session.user.userId.substring(60)
         console.log("Number Intent")
-        console.log(session.attributes)
         if (session.attributes.series && session.attributes.whichSeason){
             if (intent.slots.NumVal.value){
-                session.attributes.seasonNum = intent.slots.NumVal.value
+
+                session.attributes.media.seasonNum = intent.slots.NumVal.value
                 session.attributes.whichSeason = false
             }
-            return SelectEpisode(queue_id,response, session,session.attributes.imdbid,session.attributes.title,session.attributes.year,session.attributes.show_tvdbid,session.attributes.episodeNum,session.attributes.seasonNum)
+            return SelectEpisode(queue_id,response,session,session.attributes.media)
         }
         else if (session.attributes.series && session.attributes.whichEpisode){
             if (intent.slots.NumVal.value){
-                session.attributes.episodeNum = intent.slots.NumVal.value
+                session.attributes.media.episodeNum = intent.slots.NumVal.value
                 session.attributes.whichEpisode = false
             }
-            return SelectEpisode(queue_id,response, session,session.attributes.imdbid,session.attributes.title,session.attributes.year,session.attributes.show_tvdbid,session.attributes.episodeNum,session.attributes.seasonNum)
+            return SelectEpisode(queue_id,response, session,session.attributes.media)
         }
         else{
             response.ask("I didn't understand. What do you want?","I didn't understand. What do you want?");
@@ -514,7 +523,7 @@ PlayTV.prototype.intentHandlers = {
                 response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
                 return console.error(err.message);
             }
-            response.tellWithCard(res.MessageAttributes.voice.StringValue,"TV Player",res.MessageAttributes.card.StringValue);
+            response.tellWithCard(res.MessageAttributes.voice,"TV Player",res.MessageAttributes.card);
             
 
         });
@@ -533,7 +542,7 @@ PlayTV.prototype.intentHandlers = {
                 response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
                 return console.error(err.message);
             }
-            response.tellWithCard(res.MessageAttributes.voice.StringValue,"TV Player",res.MessageAttributes.card.StringValue);
+            response.tellWithCard(res.MessageAttributes.voice,"TV Player",res.MessageAttributes.card);
             
 
         });
@@ -551,7 +560,7 @@ PlayTV.prototype.intentHandlers = {
                 response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
                 return console.error(err.message);
             }
-            response.tellWithCard(res.MessageAttributes.voice.StringValue,"TV Player",res.MessageAttributes.card.StringValue);
+            response.tellWithCard(res.MessageAttributes.voice,"TV Player",res.MessageAttributes.card);
             
 
         });
@@ -568,7 +577,7 @@ PlayTV.prototype.intentHandlers = {
                 response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
                 return console.error(err.message);
             }
-            response.tellWithCard(res.MessageAttributes.voice.StringValue,"TV Player",res.MessageAttributes.card.StringValue);
+            response.tellWithCard(res.MessageAttributes.voice,"TV Player",res.MessageAttributes.card);
             
 
         });
@@ -577,7 +586,7 @@ PlayTV.prototype.intentHandlers = {
     
     "NavigateContinue": function (intent, session, response) {
         if (!session.attributes.Navigate)
-            response.ask("Could you repeat that?","Please repeat what you just said")
+            return response.ask("Could you repeat that?","Please repeat what you just said")
         
         session.attributes.Navigate = true
         
@@ -590,14 +599,9 @@ PlayTV.prototype.intentHandlers = {
             num = intent.slots.NumVal.value
         }
         message_attributes = {
-            nav: {
-                DataType: 'String',
-                StringValue: intent.slots.NavLocation.value
-            },
-            num: {
-                DataType: 'String',
-                StringValue: num
-            },
+            nav:intent.slots.NavLocation.value,
+            num:num
+
         }
         
         SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){  
@@ -605,7 +609,7 @@ PlayTV.prototype.intentHandlers = {
                 response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
                 return console.error(err.message);
             }
-            response.ask(res.MessageAttributes.voice.StringValue,res.MessageAttributes.card.StringValue);
+            return response.ask(res.MessageAttributes.voice,res.MessageAttributes.card);
             
 
         });
@@ -634,14 +638,8 @@ PlayTV.prototype.intentHandlers = {
             num = intent.slots.NumVal.value
         }
         message_attributes = {
-            nav: {
-                DataType: 'String',
-                StringValue: intent.slots.NavLocation.value
-            },
-            num: {
-                DataType: 'String',
-                StringValue: num
-            },
+            nav:intent.slots.NavLocation.value,
+            num: num
         }
 
         SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){  
@@ -649,7 +647,7 @@ PlayTV.prototype.intentHandlers = {
                 response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
                 return console.error(err.message);
             }
-            response.tellWithCard(res.MessageAttributes.voice.StringValue,"TV Player",res.MessageAttributes.card.StringValue);
+            response.tellWithCard(res.MessageAttributes.voice,"TV Player",res.MessageAttributes.card);
 
         });
     
@@ -659,8 +657,98 @@ PlayTV.prototype.intentHandlers = {
     
     "PlaySportsIntent": function (intent, session, response) {
         queue_id = session.user.userId.substring(60)
-    
-        var reddit = new Snoocore({
+
+        teamname = intent.slots.MediaName.value.toLowerCase()
+
+        Date.prototype.addHours=function(h){
+            this.setHours(this.getHours()+h);
+            return this
+        }
+        today_from = new Date().addHours(-8).toISOString();
+        today_to = (new Date().addHours(23-8)).toISOString();
+
+        retvals = []
+
+        //today = date.getFullYear() + '-' + date.getMonth() +1
+        //today = datetime.utcnow() - timedelta(hours=8)
+        //today_from = str(today.strftime('%Y-%m-%d'))+'T00:00:00.000-05:00'
+        //today_to = str(today.strftime('%Y-%m-%d'))+'T23:59:00.000-05:00'
+        //print "PROSPORT LINK"
+
+        //print 'http://www.sbnation.com/sbn_scoreboard/ajax_leagues_and_events?ranges['+mode+'][from]='+today_from+'&ranges['+mode+'][until]='+today_to
+        //js = GetJSON('http://www.sbnation.com/sbn_scoreboard/ajax_leagues_and_events?ranges['+mode+'][from]='+today_from+'&ranges['+mode+'][until]='+today_to)
+
+        sports = ['nba','nhl','nfl']
+        donecount = 0
+        sports.forEach(function(mode){
+             url = 'http://www.sbnation.com/sbn_scoreboard/ajax_leagues_and_events?ranges['+mode+'][from]='+today_from+'&ranges['+mode+'][until]='+today_to
+             request(url, function(error,response,body){
+                if(!error && response.statusCode == 200){
+                    var fbResponse = JSON.parse(body)
+                    console.log("Got a response: ", fbResponse)
+                    console.log(fbResponse['leagues'][mode].length)
+
+                    fbResponse['leagues'][mode].forEach(function(game){
+                        var home = game['away_team']['name'].toLowerCase()
+                        var away = game['home_team']['name'].toLowerCase()
+                        console.log("home:" + home + "  away: " + away  +  "   teamname: " + teamname)
+                        if (home.indexOf(teamname) > -1 || away.indexOf(teamname) > -1 ){
+                            retvals.push({home:home,away:away,mode:mode})
+                        }
+
+                    })
+
+                    donecount = donecount +1
+                    done()
+                }else{
+                    console.log("Got an error: ", error, ", status code: ", response.statusCode);
+                    donecount = donecount +1
+                    done()
+                }
+
+             });
+        })
+
+
+        function done(){
+            if (donecount >= sports.length){
+                if (retvals.length <= 0){
+                    response.tell("I couldn't find a team " + teamname + " playing today");
+                }
+                if(retvals.length == 1){
+                    sendteam(retvals[0])
+                }
+                if(retvals.length > 1){
+
+                    response = 'Which game did you want?'
+                    retvals.foreach(function(game){
+                        response = response + game.mode + ', ' + game.away + ' at ' + game.home + '.'
+                    })
+                }
+
+            }
+        }
+
+        function sendteam(gamedata){
+            SendMessageAndAwaitResponse(queue_id,'sports',gamedata,function(err,res){
+            if (err){
+                response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
+                return console.error(err.message);
+            }
+            //ResponseTitle = ThreadTitle.replace(/Game Thread\:/gi,"")
+            //ResponseTitle = ResponseTitle.replace(/\[request\]/gi,"")
+            response.tellWithCard("Playing " + gamedata.away + ' at ' + gamedata.home,"TV Player","Playing " + gamedata.away + ' at ' + gamedata.home);
+
+            return
+
+            });
+        }
+
+
+
+
+
+        /*var reddit = new Snoocore({
             userAgent:"Sport Streams parser by /u/silicondiver (v0.1)",
             throttle: 0,
             oauth: {
@@ -729,12 +817,12 @@ PlayTV.prototype.intentHandlers = {
                                     numStreams++
                                     if (numStreams >= 10)
                                         break
-                                    /*message_attributes = {
+                                    message_attributes = {
                                         url: {
                                             DataType: 'String',
                                             StringValue: temp[0]
                                         }
-                                    }*/
+                                    }
                 
                                     
                                 }
@@ -761,7 +849,7 @@ PlayTV.prototype.intentHandlers = {
                 }
                 subreddit_callback()
             });
-        }
+        }*/
     },
             
 

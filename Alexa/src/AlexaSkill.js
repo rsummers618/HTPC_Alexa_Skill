@@ -62,7 +62,9 @@ AlexaSkill.prototype.eventHandlers = {
             intentHandler = this.intentHandlers[intentName];
         if (intentHandler) {
             console.log('dispatch intent = ' + intentName);
+
             intentHandler.call(this, intent, session, response);
+
         } else {
             throw 'Unsupported intent = ' + intentName;
         }
@@ -104,7 +106,9 @@ AlexaSkill.prototype.execute = function (event, context) {
 
         // Route the request to the proper handler which may have been overriden.
         var requestHandler = this.requestHandlers[event.request.type];
-        requestHandler.call(this, event, context, new Response(context, event.session));
+
+            requestHandler.call(this, event, context, new Response(context, event.session));
+
     } catch (e) {
         console.log("Unexpected exception " + e);
         context.fail(e);
