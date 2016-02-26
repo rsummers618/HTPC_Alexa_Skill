@@ -35,17 +35,18 @@ def sendJSONRPC(method,params=None):
     #log.info(sendstring)
     return json.loads(xbmc.executeJSONRPC(sendstring))
 
-def setup_video_addons():
+def setup_video_addons(movies, series, sports):
     #log.info('setup_video_addons()')
     # send jsonrpc request to get list of enabled video addons
     video_addons = sendJSONRPC('Addons.GetAddons',["xbmc.addon.video","video","all",["name","enabled"]])
+    #log.info(video_addons['result']['addons'])
     try:
         for video in video_addons['result']['addons']:
-            if video['addonid'] in supported_movie_addons:
+            if video['addonid'] in movies and video['enabled']:
                 cfg.movie_addons.append(video['addonid'])
-            if video['addonid'] in supported_series_addons:
+            if video['addonid'] in series and video['enabled']:
                 cfg.series_addons.append(video['addonid'])
-            if video['addonid'] in supported_sports_addons:
+            if video['addonid'] in sports and video['enabled']:
                 cfg.sports_addons.append(video['addonid'])
     except:
         log.info('WARNING: no supported video addons found.')
@@ -68,7 +69,7 @@ if not enable_pulsar:
         log.info('\terror trying to disable pulsar (element not found)')
 
 # check installed vs. supported to understand which addons the script can access
-setup_video_addons()
+setup_video_addons(supported_movie_addons, supported_series_addons, supported_sports_addons)
 
 # save to config object
 cfg.socket_url       = ADDON.getSetting('socket_url')        #'http://ec2-54-191-98-39.us-west-2.compute.amazonaws.com'

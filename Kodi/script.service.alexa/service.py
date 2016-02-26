@@ -545,9 +545,6 @@ def reconnect():
     global socketIO
     socketIO.emit('add client',cfg.user_id)
 
-    
-    
-    
 #setup_addons()   
 socketIO = SocketIO(cfg.socket_url,cfg.socket_port,LoggingNamespace)
 log.info('websocket object created')
