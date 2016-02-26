@@ -118,7 +118,7 @@ def watch_movie_addon(addon,title,imdbid):
 
     log.info('watch_movie_addon(%s, %s, %s)' % (addon, title, imdbid))
 
-    sendJSONRPC('Player.Open',{'item':{"file":"plugin://plugin.video."+addon+"/movie/"+imdbid+"/play"}})
+    sendJSONRPC('Player.Open',{'item':{"file":"plugin://"+addon+"/movie/"+imdbid+"/play"}})
 
     return
 
@@ -131,20 +131,20 @@ def watch_series_addon(addon,title,tvdbid,tmdbid,seasonNum,episodeNum,episode_ti
 
     if seasonNum and episodeNum:
         send_response_message("Playing, " + title + ", " + episode_title + " , on " +addon ,title + " played on " + addon)
-        sendJSONRPC('Player.Open',{'item':{"file":"plugin://plugin.video."+addon+"/show/"+tmdbid+"/season/"+seasonNum+"/episode/"+episodeNum+"/play"}})
+        sendJSONRPC('Player.Open',{'item':{"file":"plugin://"+addon+"/show/"+tmdbid+"/season/"+seasonNum+"/episode/"+episodeNum+"/play"}})
 
         return
 
     elif seasonNum:
 
         send_response_message("Opening, " + title + ", on " + addon,title + " played on " + addon)
-        sendJSONRPC('GUI.ActivateWindow',{"window":"videos","parameters":["plugin://plugin.video."+addon+"/show/"+tmdbid+"/season/"+seasonNum+"/episodes"]})
+        sendJSONRPC('GUI.ActivateWindow',{"window":"videos","parameters":["plugin://"+addon+"/show/"+tmdbid+"/season/"+seasonNum+"/episodes"]})
 
         return
 
     else:
         send_response_message("Opening, " + title + ", on " + addon,title + " played on " + addon)
-        sendJSONRPC('GUI.ActivateWindow',{"window":"videos","parameters":["plugin://plugin.video."+addon+"/show/"+tmdbid+"/seasons"]})
+        sendJSONRPC('GUI.ActivateWindow',{"window":"videos","parameters":["plugin://"+addon+"/show/"+tmdbid+"/seasons"]})
 
         return
     
@@ -207,11 +207,11 @@ def play_movie(message_attributes):#(title,imdbid,netflixid):
         traceback.print_exc()
         log.info("\tlocal movie playback failed")
         
-    if  'netflixid' in message_attributes and int(message_attributes['netflixid']) != -1:
+    if  cfg.netflix_enabled and 'netflixid' in message_attributes and int(message_attributes['netflixid']) != -1:
         try:
             return watch_netflix(title,message_attributes['netflixid'])
         except:
-            log.info("Error: problem playing Netflix")
+            log.info("\tError: problem playing Netflix")
             #return tell_response_message("There was a problem playing with Netflix", "There was a problem playing with Netflix")
         
     for addon in cfg.movie_addons:
@@ -220,7 +220,11 @@ def play_movie(message_attributes):#(title,imdbid,netflixid):
         except Exception as e:
             log.info(e)
             traceback.print_exc()
-            return tell_response_message("There was a problem playing with " + addon, "There was a problem playing with " + addon)
+            log.info('\tError: problem playing with ' + addon)
+            #return tell_response_message("There was a problem playing with " + addon, "There was a problem playing with " + addon)
+
+    log.info("\tmovie source not found. exiting")
+    return tell_response_message("Couldn't find a source", "Couldn't find a source")
 
 def play_local_movie(movieid):
     sendJSONRPC("Playlist.Clear", {"playlistid": 1})
@@ -326,7 +330,7 @@ def play_series(message_attributes):
         try:
             return watch_netflix(title,message_attributes['netflixid'])
         except:
-            log.info("Problem playing netflix")
+            log.info("\tError: problem playing netflix")
             #return tell_response_message("There was a problem playing with Netflix", "There was a problem playing with Netflix")
 
     for addon in cfg.series_addons:
@@ -335,9 +339,10 @@ def play_series(message_attributes):
         except Exception as e:
             log.info(e)
             traceback.print_exc()
-            return tell_response_message("There was a problem playing with " + addon, "There was a problem playing with " + addon)
+            log.info('\tError: problem playing with ' + addon)
+            #return tell_response_message("There was a problem playing with " + addon, "There was a problem playing with " + addon)
 
-    log.info("\tepisode source not found. Exiting")
+    log.info("\tepisode source not found. exiting")
     return tell_response_message("Couldn't find a source", "Couldn't find a source")
 
 
@@ -353,7 +358,7 @@ def play_random_movie():
 def play_sports(message_attributes):
     for addon in sports_addons:
         #plugin://plugin.video.prosport/?away=Cleveland%20Cavaliers&home=Charlotte%20Hornets&mode=STREAMS&url=https%3a%2f%2fwww.reddit.com%2fr%2fnbastreams
-        sendJSONRPC('GUI.ActivateWindow',{"window":"videos","parameters":["plugin://plugin.video."+addon+"?away="+message_attributes['away']+"&home="+message_attributes['home']+"&mode=STREAMS&url=https%3a%2f%2fwww.reddit.com%2fr%2f"+message_attributes['mode']+"streams"]})
+        sendJSONRPC('GUI.ActivateWindow',{"window":"videos","parameters":["plugin://"+addon+"?away="+message_attributes['away']+"&home="+message_attributes['home']+"&mode=STREAMS&url=https%3a%2f%2fwww.reddit.com%2fr%2f"+message_attributes['mode']+"streams"]})
         #print("acton finished finally...")
         send_response_message("Ok","OK")
 
@@ -420,7 +425,7 @@ def recent_episodes(message_attributes):
     
 def recent_movies(message_attributes):
 
-    log.info("recent_movies(..)")
+    log.info("recent_movies()")
 
     response = sendJSONRPC("VideoLibrary.GetRecentlyAddedMovies", { "properties": [ "title"],"limits":{"end":5 }})
     try:

@@ -41,7 +41,6 @@ def setup_video_addons():
     video_addons = sendJSONRPC('Addons.GetAddons',["xbmc.addon.video","video","all",["name","enabled"]])
     try:
         for video in video_addons['result']['addons']:
-            #log.info(video)
             if video['addonid'] in supported_movie_addons:
                 cfg.movie_addons.append(video['addonid'])
             if video['addonid'] in supported_series_addons:
@@ -49,7 +48,7 @@ def setup_video_addons():
             if video['addonid'] in supported_sports_addons:
                 cfg.sports_addons.append(video['addonid'])
     except:
-        log.info('\tno video addons found.')
+        log.info('WARNING: no supported video addons found.')
 
 # obey user settings for sources
 enable_quasar       = ADDON.getSetting('quasar_enabled') == "true"
@@ -58,7 +57,7 @@ if not enable_quasar:
         supported_movie_addons.remove('plugin.video.quasar')
         supported_series_addons.remove('plugin.video.quasar')
     except:
-        log.info('\terror trying to disable quasar usage (element not found)')
+        log.info('\terror trying to disable quasar (element not found)')
 
 enable_pulsar       = ADDON.getSetting('pulsar_enabled') == "true"
 if not enable_pulsar:
@@ -66,9 +65,9 @@ if not enable_pulsar:
         supported_movie_addons.remove('plugin.video.pulsar')
         supported_series_addons.remove('plugin.video.pulsar')
     except:
-        log.info('\terror trying to disable pulsar usage (element not found)')
+        log.info('\terror trying to disable pulsar (element not found)')
 
-# check installed vs. supported to understand what things are active
+# check installed vs. supported to understand which addons the script can access
 setup_video_addons()
 
 # save to config object
@@ -77,11 +76,11 @@ cfg.socket_port      = int(ADDON.getSetting('socket_port'))  #3000
 cfg.user_id          = ADDON.getSetting('authcode')
 cfg.enable_netflix   = ADDON.getSetting('netflix_enabled') == "true"
 
-#save to log
+# save to log
 log.info('remote:  \t%s:%s' % (cfg.socket_url, cfg.socket_port))
 log.info('authcode:\t%s' % cfg.user_id)
 log.info('netflix: \t%s' % str(cfg.enable_netflix))
-log.info('video addons')
+log.info('video addons..')
 temp = '\tmovies: '
 for name in cfg.movie_addons:
     temp = temp + '[' + name + ']'
