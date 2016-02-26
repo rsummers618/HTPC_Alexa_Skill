@@ -10,44 +10,18 @@ import traceback
 import urllib
 from addon import ADDON, ADDON_NAME, ADDON_VER
 from logger import log
+from config import cfg
 
 sys.path.append(os.path.join(os.path.dirname(__file__), 'lib'))
 from socketIO_client import SocketIO,LoggingNamespace
 
-user_id = ADDON.getSetting('authcode')
-socket_url = 'http://ec2-54-191-98-39.us-west-2.compute.amazonaws.com'
-socket_port= 3000
 socketIO = None
 
-log.info('Script [%s] version [%s]' % (ADDON_NAME, ADDON_VER))
-log.info('remote:  \t%s:%s' % (socket_url, socket_port))
-log.info('authcode:\t%s' % user_id)
-
-supported_movie_addons=['addon.video.pulsar','addon.video.quasar']
-supported_series_addons=['addon.video.pulsar','addon.video.quasar']
-
-movie_addons = ['quasar']
-series_addons = ['quasar']
-sports_addons = ['prosport']
-
-while len(user_id) < 15:
+while len(cfg.user_id) < 15:
     xbmc.executebuiltin('Notification(Alexa Service,Please enter a valid key into the alexa service)')
     for i in range(60):
         time.sleep(1)
-    user_id = ADDON.getSetting('authcode')
-
-
-def setup_addons():
-    video_addons = sendJSONRPC('Addons.GetAddons',{"type":"xbmc.addon.video","content":"video","enabled":"true","properties":["path","name"]})
-    
-    log.info(video_addons)
-    return
-    for video in video_addons:
-        #print video
-        if video.name in supported_movie_addons:
-            movie_addons.add(video.name) 
-        if video.name in supported_series_addons:
-            series_addons.add(video.name)
+    cfg.user_id = ADDON.getSetting('authcode')
 
 
 def sendJSONRPC(method,params=None):
@@ -61,7 +35,7 @@ def sendJSONRPC(method,params=None):
 
 def play_generic_addon(message_attributes):
     addons = sendJSONRPC('Addons.GetAddons',{"enabled":true,"properties":["path","name"]})
-    for video in video_addons:
+    for video in cfg.video_addons:
         if message_attributes['addon'] in video.name:
             log.info('\taddon found')
     return
@@ -240,7 +214,7 @@ def play_movie(message_attributes):#(title,imdbid,netflixid):
             log.info("Error: problem playing Netflix")
             #return tell_response_message("There was a problem playing with Netflix", "There was a problem playing with Netflix")
         
-    for addon in movie_addons:
+    for addon in cfg.movie_addons:
         try:
             return watch_movie_addon(addon,title,imdbid)
         except Exception as e:
@@ -348,14 +322,14 @@ def play_series(message_attributes):
         log.info("\tlocal show playback failed")
 
     
-    if  'netflixid' in message_attributes and int(message_attributes['netflixid']) != -1:
+    if  cfg.netflix_enabled and 'netflixid' in message_attributes and int(message_attributes['netflixid']) != -1:
         try:
             return watch_netflix(title,message_attributes['netflixid'])
         except:
             log.info("Problem playing netflix")
             #return tell_response_message("There was a problem playing with Netflix", "There was a problem playing with Netflix")
 
-    for addon in series_addons:
+    for addon in cfg.series_addons:
         try:
             return watch_series_addon(addon, title,show_tvdbid,show_tmdbid,season_number,episode_number,episode_title)
         except Exception as e:
@@ -564,17 +538,17 @@ def execute_command(*args):
 def reconnect():
     log.info('socektio:reconnect()')
     global socketIO
-    socketIO.emit('add client',user_id)
+    socketIO.emit('add client',cfg.user_id)
 
     
     
     
 #setup_addons()   
-socketIO = SocketIO(socket_url,socket_port,LoggingNamespace)
+socketIO = SocketIO(cfg.socket_url,cfg.socket_port,LoggingNamespace)
 log.info('websocket object created')
 
-socketIO.emit('add client',user_id)
-log.info('\tclient added (%s)' % user_id)
+socketIO.emit('add client',cfg.user_id)
+log.info('\tclient added (%s)' % cfg.user_id)
 
 socketIO.on('disconnect',handle_disconnect)
 socketIO.on('server message',execute_command)

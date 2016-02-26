@@ -1,10 +1,18 @@
 import xbmc
 import json
-from addon import ADDON
+from addon import ADDON, ADDON_NAME, ADDON_VER
 from logger import log
 
+class Configuration:
+    socket_url      = ''
+    socket_port     = 3000
+    user_id         = ''
+    enable_netflix  = None # bools,lists can't be initialized
+    movie_addons    = None
+    series_addons   = None
+    sports_addons   = None
+
 log.info('Script [%s] version [%s]' % (ADDON_NAME, ADDON_VER))
-log.info('config.py')
 
 # define which video addons alexa script supports
 supported_movie_addons  = ['plugin.video.pulsar','plugin.video.quasar']
@@ -12,10 +20,13 @@ supported_series_addons = ['plugin.video.pulsar','plugin.video.quasar']
 supported_sports_addons = ['plugin.video.prosport']
 
 # initialize
-movie_addons        = []
-series_addons       = []
-sports_addons       = []
+cfg = Configuration()
+cfg.enable_netflix      = False
+cfg.movie_addons        = []
+cfg.series_addons       = []
+cfg.sports_addons       = []
 
+#methods
 def sendJSONRPC(method,params=None):
     out = {"id":1,"jsonrpc":"2.0","method":method}
     if params:
@@ -29,16 +40,19 @@ def setup_video_addons():
 
     # send jsonrpc request to get list of enabled video addons
     video_addons = sendJSONRPC('Addons.GetAddons',{"type":"xbmc.addon.video","content":"video","enabled":"true","properties":["path","name"]})
-    for video in video_addons:
-        if video.name in supported_movie_addons:
-            log.info('\tmovie: plugin.video.%s' % video.name)
-            movie_addons.append('plugin.video.' + video.name)
-        if video.name in supported_series_addons:
-            log.info('\tseries: plugin.video.%s' % video.name)
-            series_addons.append('plugin.video.' + video.name)
-        if video.name in supported_sports_addons:
-            log.info('\tsports: plugin.video.%s' % video.name)
-            sports_addons.append('plugin.video.' + video.name)
+    try:
+        for video in video_addons:
+            if video.name in supported_movie_addons:
+                log.info('\tmovie: plugin.video.%s' % video.name)
+                cfg.movie_addons.append('plugin.video.' + video.name)
+            if video.name in supported_series_addons:
+                log.info('\tseries: plugin.video.%s' % video.name)
+                cfg.series_addons.append('plugin.video.' + video.name)
+            if video.name in supported_sports_addons:
+                log.info('\tsports: plugin.video.%s' % video.name)
+                cfg.sports_addons.append('plugin.video.' + video.name)
+    except:
+        log.info('\tno video addons found')
 
 # obey user settings for sources
 enable_quasar       = ADDON.getSetting('quasar_enabled') == "true"
@@ -61,28 +75,25 @@ if not enable_pulsar:
 setup_video_addons()
 
 # save to config object
-config.socket_url       = ADDON.getSetting('socket_url')        #'http://ec2-54-191-98-39.us-west-2.compute.amazonaws.com'
-config.socket_port      = int(ADDON.getSetting('socket_port'))  #3000
-config.user_id          = ADDON.getSetting('authcode')
-config.enable_netflix   = ADDON.getSetting('netflix_enabled') == "true"
-config.movie_addons     = movie_addons
-config.series_addons    = series_addons
-config.sports_addons    = sports_addons
+cfg.socket_url       = ADDON.getSetting('socket_url')        #'http://ec2-54-191-98-39.us-west-2.compute.amazonaws.com'
+cfg.socket_port      = int(ADDON.getSetting('socket_port'))  #3000
+cfg.user_id          = ADDON.getSetting('authcode')
+cfg.enable_netflix   = ADDON.getSetting('netflix_enabled') == "true"
 
 #save to log
-log.info('remote:  \t%s:%s' % (config.socket_url, config.socket_port))
-log.info('authcode:\t%s' % config.user_id)
-log.info('netflix: \t%s' % str(config.enable_netflix))
+log.info('remote:  \t%s:%s' % (cfg.socket_url, cfg.socket_port))
+log.info('authcode:\t%s' % cfg.user_id)
+log.info('netflix: \t%s' % str(cfg.enable_netflix))
 log.info('video addons:')
 temp = '\tmovies: '
-for name in movie_addons
+for name in cfg.movie_addons:
     temp = temp + '[' + name + ']'
 log.info(temp)
 temp = '\tseries: '
-for name in series_addons
+for name in cfg.series_addons:
     temp = temp + '[' + name + ']'
 log.info(temp)
 temp = '\tsports: '
-for name in sports_addons
+for name in cfg.sports_addons:
     temp = temp + '[' + name + ']'
 log.info(temp)
