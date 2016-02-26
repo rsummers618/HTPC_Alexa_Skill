@@ -32,27 +32,24 @@ def sendJSONRPC(method,params=None):
     if params:
         out["params"] = params
     sendstring = json.dumps(out)
-    log.info(sendstring)
+    #log.info(sendstring)
     return json.loads(xbmc.executeJSONRPC(sendstring))
 
 def setup_video_addons():
-    log.info('setup_video_addons()')
-
+    #log.info('setup_video_addons()')
     # send jsonrpc request to get list of enabled video addons
-    video_addons = sendJSONRPC('Addons.GetAddons',{"type":"xbmc.addon.video","content":"video","enabled":"true","properties":["path","name"]})
+    video_addons = sendJSONRPC('Addons.GetAddons',["xbmc.addon.video","video","all",["name","enabled"]])
     try:
-        for video in video_addons:
-            if video.name in supported_movie_addons:
-                log.info('\tmovie: plugin.video.%s' % video.name)
-                cfg.movie_addons.append('plugin.video.' + video.name)
-            if video.name in supported_series_addons:
-                log.info('\tseries: plugin.video.%s' % video.name)
-                cfg.series_addons.append('plugin.video.' + video.name)
-            if video.name in supported_sports_addons:
-                log.info('\tsports: plugin.video.%s' % video.name)
-                cfg.sports_addons.append('plugin.video.' + video.name)
+        for video in video_addons['result']['addons']:
+            #log.info(video)
+            if video['addonid'] in supported_movie_addons:
+                cfg.movie_addons.append(video['addonid'])
+            if video['addonid'] in supported_series_addons:
+                cfg.series_addons.append(video['addonid'])
+            if video['addonid'] in supported_sports_addons:
+                cfg.sports_addons.append(video['addonid'])
     except:
-        log.info('\tno video addons found')
+        log.info('\tno video addons found.')
 
 # obey user settings for sources
 enable_quasar       = ADDON.getSetting('quasar_enabled') == "true"
@@ -84,7 +81,7 @@ cfg.enable_netflix   = ADDON.getSetting('netflix_enabled') == "true"
 log.info('remote:  \t%s:%s' % (cfg.socket_url, cfg.socket_port))
 log.info('authcode:\t%s' % cfg.user_id)
 log.info('netflix: \t%s' % str(cfg.enable_netflix))
-log.info('video addons:')
+log.info('video addons')
 temp = '\tmovies: '
 for name in cfg.movie_addons:
     temp = temp + '[' + name + ']'
