@@ -207,7 +207,7 @@ def play_movie(message_attributes):#(title,imdbid,netflixid):
         traceback.print_exc()
         log.info("\tlocal movie playback failed")
         
-    if  cfg.netflix_enabled and 'netflixid' in message_attributes and int(message_attributes['netflixid']) != -1:
+    if  cfg.enable_netflix and 'netflixid' in message_attributes and int(message_attributes['netflixid']) != -1:
         try:
             return watch_netflix(title,message_attributes['netflixid'])
         except:
@@ -326,7 +326,7 @@ def play_series(message_attributes):
         log.info("\tlocal show playback failed")
 
     
-    if  cfg.netflix_enabled and 'netflixid' in message_attributes and int(message_attributes['netflixid']) != -1:
+    if  cfg.enable_netflix and 'netflixid' in message_attributes and int(message_attributes['netflixid']) != -1:
         try:
             return watch_netflix(title,message_attributes['netflixid'])
         except:
@@ -492,12 +492,11 @@ def tell_response_message(voice,card):
 def send_response_message(voice,card,body = "OK"):
 
     message = {
-        'MessageBody':'body',
-        'MessageAttributes':{
-            'voice':voice,
-            'card':card
-        }
+		'type':body,
+        'voice':voice,
+        'card':card
     }
+
     socketIO.emit('client message',message)
     return
 

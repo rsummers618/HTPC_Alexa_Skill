@@ -119,7 +119,10 @@ function SendMessage(session_id,body,message_attributes){
 }
    
 
-function SendMessageAndAwaitResponse(session_id,message_body,message_attributes,callback){
+function SendMessageAndAwaitResponse(session,response,message_body,message_attributes,callback){
+
+    session_id = session.user.userId.substring(60)
+
     SendMessage(session_id,message_body,message_attributes)
     console.log("Waiting for response ")
     var timeoutProtect = setTimeout(function() {
@@ -128,7 +131,7 @@ function SendMessageAndAwaitResponse(session_id,message_body,message_attributes,
         timeoutProtect = null;
 
         // Execute the callback with an error argument.
-        return callback(new Error("can't communicate with TV"));
+        return response.tell("Message sent, Kodi didn't respond in time");
 
     }, 3000);//.get_remaining_time_in_millis() - 500);
     if (timeoutProtect){
@@ -137,8 +140,19 @@ function SendMessageAndAwaitResponse(session_id,message_body,message_attributes,
             clearTimeout(timeoutProtect)
             console.log("Response received")
             console.log(data.message)
-            return callback (false,data.message)
+
+            if (data.message.type == 'ask'){
+                return response.ask(data.message.MessageAttributes.voice)
+            }
+            else{
+                return response.tellWithCard(data.message.voice,"TV Player",data.message.card);
+            }
+            //return callback (false,data.message)
+
         });
+        socket.on('no client',function(data){
+            return response.tell("Kodi is not connected to the server");
+        })
     }
 }
 
@@ -237,7 +251,7 @@ function SelectEpisode(queue_id,response,session,media){
                     }
                     media.netflixid = netflixid
                     console.log(netflixid)
-                    return sendMediaToQueue(response,queue_id,media)
+                    return sendMediaToQueue(session,response,media)
                 });
             }
         
@@ -252,7 +266,7 @@ function SelectEpisode(queue_id,response,session,media){
        
 }
 
-function sendMediaToQueue(response,queue_id,media){
+function sendMediaToQueue(session,response,media){
 
     if (media.series){
         message_body = 'series'
@@ -262,7 +276,7 @@ function sendMediaToQueue(response,queue_id,media){
         
 
 
-    SendMessageAndAwaitResponse(queue_id,message_body,media,function(err,res){
+    SendMessageAndAwaitResponse(session,response,message_body,media,function(err,res){
         if (err){
             console.log(res)
             response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
@@ -386,7 +400,7 @@ PlayTV.prototype.intentHandlers = {
                     }
                     media.netflixid = netflixid
                     console.log(netflixid)
-                    return sendMediaToQueue(response,queue_id,media)
+                    return sendMediaToQueue(session,response,media)
                 });
             }
             
@@ -406,7 +420,7 @@ PlayTV.prototype.intentHandlers = {
                 
         message_body = "pandora"
         
-        SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){  
+        SendMessageAndAwaitResponse(session,response,message_body,message_attributes,function(err,res){
             if (err){
                 response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
                 return console.error(err.message);
@@ -437,7 +451,7 @@ PlayTV.prototype.intentHandlers = {
                 
         message_body = "NewEpisodes"
         try{
-        SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){  
+        SendMessageAndAwaitResponse(session,response,message_body,message_attributes,function(err,res){
             if (err){
                 console.error(err.message);
                 return response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
@@ -465,7 +479,7 @@ PlayTV.prototype.intentHandlers = {
         message_attributes = {}
         message_body = "playpause"
 
-        SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){  
+        SendMessageAndAwaitResponse(session,response,message_body,message_attributes,function(err,res){
             if (err){
                 response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
                 return console.error(err.message);
@@ -518,7 +532,7 @@ PlayTV.prototype.intentHandlers = {
         message_attributes = {}
         message_body = "stop"
 
-        SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){  
+        SendMessageAndAwaitResponse(session,response,message_body,message_attributes,function(err,res){
             if (err){
                 response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
                 return console.error(err.message);
@@ -537,7 +551,7 @@ PlayTV.prototype.intentHandlers = {
         message_attributes = {}
         message_body = "playing"
 
-        SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){  
+        SendMessageAndAwaitResponse(session,response,message_body,message_attributes,function(err,res){
             if (err){
                 response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
                 return console.error(err.message);
@@ -555,7 +569,7 @@ PlayTV.prototype.intentHandlers = {
         message_attributes = {}
         message_body = "recent_movies"
 
-        SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){  
+        SendMessageAndAwaitResponse(session,response,message_body,message_attributes,function(err,res){
             if (err){
                 response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
                 return console.error(err.message);
@@ -572,7 +586,7 @@ PlayTV.prototype.intentHandlers = {
         message_attributes = {}
         message_body = "recent_episodes"
 
-        SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){  
+        SendMessageAndAwaitResponse(session,response,message_body,message_attributes,function(err,res){
             if (err){
                 response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
                 return console.error(err.message);
@@ -604,7 +618,7 @@ PlayTV.prototype.intentHandlers = {
 
         }
         
-        SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){  
+        SendMessageAndAwaitResponse(session,response,message_body,message_attributes,function(err,res){
             if (err){
                 response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
                 return console.error(err.message);
@@ -642,7 +656,7 @@ PlayTV.prototype.intentHandlers = {
             num: num
         }
 
-        SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){  
+        SendMessageAndAwaitResponse(session,response,message_body,message_attributes,function(err,res){
             if (err){
                 response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
                 return console.error(err.message);
@@ -730,7 +744,7 @@ PlayTV.prototype.intentHandlers = {
         }
 
         function sendteam(gamedata){
-            SendMessageAndAwaitResponse(queue_id,'sports',gamedata,function(err,res){
+            SendMessageAndAwaitResponse(session,response,'sports',gamedata,function(err,res){
             if (err){
                 response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
                 return console.error(err.message);

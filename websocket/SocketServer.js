@@ -13,7 +13,6 @@ var socket_key = secret.API_KEYS.socket_key
 var http = require('http');
 http.createServer(function (req, res) {
   res.writeHead(200, {'Content-Type': 'text/plain'});
-  res.end('Hello Worldn');
 }).listen(8080);
 console.log('Server running at http://127.0.0.1:80/');
 
@@ -29,6 +28,15 @@ var numUsers = 0;
 var clients={}
 var servers={}
 
+io.on('disconnect',function(socket){
+    console.log('disconnect fired io')
+    if (addedUser) {
+        --numUsers;
+        delete clients[socket.username]
+        addedUser = false;
+        console.log('Client Disconnected io: ' + socket.username)
+    }
+})
 
 io.on('connection', function (socket) {
  
@@ -36,18 +44,8 @@ io.on('connection', function (socket) {
     
   var addedUser = false;
 
-  // when the client emits 'new message', this listens and executes
-  socket.on('new message', function (data) {
-    // we tell the client to execute 'new message'
-    socket.broadcast.emit('new message', {
-      username: socket.username,
-      message: data
-    });
-  });
-
   // when the client emits 'add user', this listens and executes
   socket.on('add client', function (username) {
-    console.log('potential client')
     if (addedUser) return;
 
     // we store the username in the socket session for this client
@@ -55,8 +53,8 @@ io.on('connection', function (socket) {
     ++numUsers;
 	clients[username] = socket;
     addedUser = true;
-    console.log('client added: ' + socket.id.toString()) 
-    console.log(username)
+    console.log('Client Added: ' + socket.username)
+    clients[socket.username].emit('client connected');
 	
 
   });
@@ -64,7 +62,6 @@ io.on('connection', function (socket) {
   
   socket.on('add server', function (data) {
     console.log('potential server')
-    console.log(data)
     if (addedUser) return;
 
 	if(data.key != socket_key) return;
@@ -73,38 +70,37 @@ io.on('connection', function (socket) {
     ++numUsers;
 	servers[socket.username] = socket;
     addedUser = true;
-    console.log('Server Added')
+    console.log('Server Added: ' + socket.username)
+    servers[socket.username].emit('server connected');
 	
 
 
   });
 
 
-  socket.on('client received', function () {
+  //socket.on('client received', function () {
 	
-  });
+  //});
 
   socket.on('client message', function (data) {
 	// MAKE SURE THIS EXISTS!
-    console.log('client message')
-    console.log(data)
+    //console.log(data)
     if (servers[socket.username]){
         servers[socket.username].emit('client message',{
             message:data
         });
-
+        console.log('Client Message to : ' + socket.username)
     }
     else{
-        console.log('server ' + socket.username.toString() + ' doesnt exist')
+        console.log('Server :' + socket.username + ' doesnt exist')
     }
   });
   
   socket.on('server message', function (data) {
 	// MAKE SURE THIS EXISTS!
-    console.log('server message')
-    console.log(data)
+    //console.log(data)
     if(!socket.username){
-        console.log("server not authenticated")
+        console.log("Server not authenticated!!")
         return
     }
     
@@ -112,19 +108,22 @@ io.on('connection', function (socket) {
         clients[socket.username].emit('server message',{
             message:data
         });
-        console.log (" sent server messaage to " + clients[socket.username].id.toString())
+        console.log ("Server sent message to: " + clients[socket.username].id.toString())
     }
     else{
-        console.log('client server doesnt exist')
+        servers[socket.username].emit('no client')
+        console.log('Client: ' + socket.username + ' not connected')
     }
   });
 
   // when the user disconnects.. perform this
-  socket.on('client disconnect', function () {
-    if (addedUser) {
+  socket.on('disconnect', function () {
+    console.log('Client disconnect fired socket')
+    if (addedUser) && (clients[username] == socket) {
         --numUsers;
         delete clients[socket.username]
         addedUser = false;
+        console.log('Client Disconnected socket: ' + socket.username)
     }
   });
 });
