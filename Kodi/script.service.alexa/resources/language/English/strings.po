@@ -1,9 +1,10 @@
 # Kodi Media Center language file
-# Addon Name: Skin Widgets
-# Addon id: service.skin.widgets
-# Addon Provider: Martijn|phil65
+# Addon Name: Alexa Plugin
+# Addon id: script.service.alexa
+# Addon Provider: rsummers618
 msgid ""
 msgstr ""
+
 "Project-Id-Version: Kodi Addons\n"
 "Report-Msgid-Bugs-To: alanwww1@xbmc.org\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
@@ -17,9 +18,49 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgctxt "#32001"
-msgid "Settings"
+msgid "Alexa Skill"
+msgstr ""
+        
+msgctxt "#32002"
+msgid "Local Settings"
+msgstr ""
+
+msgctxt "#32010"
+msgid "Remote URL"
 msgstr ""
 
 msgctxt "#32011"
-msgid "Auth Code From Alexa"
+msgid "Remote Port"
+msgstr ""
+
+msgctxt "#32012"
+msgid "Auth Code"
+msgstr ""
+
+msgctxt "#32013"
+msgid "Stream Sources"
+msgstr ""
+
+msgctxt "#32014"
+msgid "Netflix"
+msgstr ""
+
+msgctxt "#32015"
+msgid "Quasar"
+msgstr ""
+
+msgctxt "#32016"
+msgid "Pulsar"
+msgstr ""
+
+msgctxt "#32017"
+msgid "Debug"
+msgstr ""
+
+msgctxt "#32018"
+msgid "Log to File"
+msgstr ""
+
+msgctxt "#32019"
+msgid "Filepath"
 msgstr ""
