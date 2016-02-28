@@ -2,65 +2,106 @@
 # Addon Name: Alexa Plugin
 # Addon id: script.service.alexa
 # Addon Provider: rsummers618
+
 msgid ""
 msgstr ""
-
-"Project-Id-Version: Kodi Addons\n"
-"Report-Msgid-Bugs-To: alanwww1@xbmc.org\n"
-"POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Kodi Translation Team\n"
-"Language-Team: English (http://www.transifex.com/projects/p/xbmc-addons/language/en/)\n"
-"MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Language: en\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 msgctxt "#32001"
 msgid "Alexa Skill"
 msgstr ""
-        
+
 msgctxt "#32002"
-msgid "Local Settings"
-msgstr ""
-
-msgctxt "#32010"
-msgid "Remote URL"
-msgstr ""
-
-msgctxt "#32011"
-msgid "Remote Port"
-msgstr ""
-
-msgctxt "#32012"
 msgid "Auth Code"
 msgstr ""
 
-msgctxt "#32013"
-msgid "Stream Sources"
+msgctxt "#32003"
+msgid "Remote URL"
 msgstr ""
 
-msgctxt "#32014"
-msgid "Netflix"
+msgctxt "#32004"
+msgid "Remote Port"
 msgstr ""
 
-msgctxt "#32015"
-msgid "Quasar"
+msgctxt "#32005"
+msgid "Debug Log To File"
 msgstr ""
 
-msgctxt "#32016"
-msgid "Pulsar"
-msgstr ""
-
-msgctxt "#32017"
-msgid "Debug"
-msgstr ""
-
-msgctxt "#32018"
-msgid "Log to File"
-msgstr ""
-
-msgctxt "#32019"
+msgctxt "#32006"
 msgid "Filepath"
+msgstr ""
+
+msgctxt "#32100"
+msgid "series"
+msgstr ""
+
+msgctxt "#32101"
+msgid "netflix"
+msgstr ""
+
+msgctxt "#32102"
+msgid "amazon prime"
+msgstr ""
+
+msgctxt "#32103"
+msgid "quasar"
+msgstr ""
+
+msgctxt "#32200"
+msgid "movies"
+msgstr ""
+
+msgctxt "#32201"
+msgid "netflix"
+msgstr ""
+
+msgctxt "#32202"
+msgid "amazon prime"
+msgstr ""
+
+msgctxt "#32203"
+msgid "quasar"
+msgstr ""
+
+msgctxt "#32300"
+msgid "music"
+msgstr ""
+
+msgctxt "#32301"
+msgid "pandoki"
+msgstr ""
+
+msgctxt "#32302"
+msgid "googlemusic"
+msgstr ""
+
+msgctxt "#32400"
+msgid "live"
+msgstr ""
+
+msgctxt "#32401"
+msgid "hdhomerun"
+msgstr ""
+
+msgctxt "#32500"
+msgid "sports"
+msgstr ""
+
+msgctxt "#32501"
+msgid "prosport"
+msgstr ""
+
+msgctxt "#32502"
+msgid "espn_3"
+msgstr ""
+
+msgctxt "#32503"
+msgid "Espn - Chrome"
+msgstr ""
+
+msgctxt "#32504"
+msgid "Fox Sports - Chrome"
+msgstr ""
+
+msgctxt "#32505"
+msgid "ABC - Chrome"
 msgstr ""

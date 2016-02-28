@@ -119,7 +119,7 @@ io.on('connection', function (socket) {
   // when the user disconnects.. perform this
   socket.on('disconnect', function () {
     console.log('Client disconnect fired socket')
-    if (addedUser) && (clients[username] == socket) {
+    if ((addedUser) && (clients[socket.username] == socket)) {
         --numUsers;
         delete clients[socket.username]
         addedUser = false;
