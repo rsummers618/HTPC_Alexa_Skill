@@ -86,23 +86,6 @@ def setup_addons(root):
                     cfg.sports_addons.append({'name':addon.attrib['name'], 'id':addon_id,'function_type':addon.attrib['function_type'],'function_vars':addon.attrib['function_vars']})
 
 
-# obey user settings for sources
-'''enable_quasar       = ADDON.getSetting('quasar_enabled') == "true"
-if not enable_quasar:
-    try:
-        supported_movie_addons.remove('plugin.video.quasar')
-        supported_series_addons.remove('plugin.video.quasar')
-    except:
-        log.info('\terror trying to disable quasar (element not found)')
-
-enable_pulsar       = ADDON.getSetting('pulsar_enabled') == "true"
-if not enable_pulsar:
-    try:
-        supported_movie_addons.remove('plugin.video.pulsar')
-        supported_series_addons.remove('plugin.video.pulsar')
-    except:
-        log.info('\terror trying to disable pulsar (element not found)')
-'''
 
 # check installed vs. supported to understand which addons the script can access
 #setup_addons(supported_movie_addons, supported_series_addons, supported_sports_addons, supported_live_addons, supported_music_addons)
