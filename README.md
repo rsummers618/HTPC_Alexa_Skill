@@ -2,12 +2,25 @@
 
 This is an Alexa skill which allows you to control media on your Kodi Media Center
 
-[Demo](https://vid.me/ZLU9)
 
 # Supported Speech Patterns
 
 [Please see Sample Utterances for examples](https://github.com/rsummers618/HTPC_Alexa_Skill/blob/master/Alexa/speechAssets/SampleUtterancesGenerator.txt)
 
+# Supported Features
+
+* Local Movie Playback
+* Local TV show playback
+* Movie Playback via installed addons
+* TV show Playback via installed addons
+* Sports playback through installed addons
+* Netflix Playback via Chrome
+
+Experimental Features that are not throughouly tested or supported, but in the works
+* Sports Playback through Chrome (ESPN, FOX, NBC, ABC etc)
+* Pandora
+* Amazon Prime Instant Video via Chrome
+* HDHomerun
 
 
 # Installation
@@ -30,6 +43,8 @@ This skill is not yet published by Amazon, so you must create a developer accoun
       
         Intent Schema: Copy paste from /Alexa/speechAssets/IntentSchema.json
         
+        Custom Slots Type: Create A custom slot for each file named in /Alexa/speechAssets/CustomSlots and copy/paste its contents
+        
         Sample Utterances: Copy paste from /Alexa/speechAssets/SampleUtterances.txt
         
       Save and You are Done!
@@ -44,37 +59,20 @@ This skill is not yet published by Amazon, so you must create a developer accoun
 
 6. Restart Kodi 
 
+7. Run your configuration, to enable/disable addons you do or don't want
+
 Thats it.
-
-# PreRequisites
-
-  App currently expects ChromeLauncher and Pulsar Addons for Kodi.
-  
-  Will remove these dependencies and detect dynamically soon
 
 #ToDo
 
-Quite a bit, this is Alpha stage.
+Currently in Beta Stage
 
 Need to Get published so this can be more user friendly to install
 
-* (1/2 complete) Full screen on sports
-* Better speech patterns
-* (complete)~~Fix some nagging queue issues~~
-* Create Generalized Addon navigator
-* (complete) ~~Menu Navigation~~
-* (complete) ~~State-ful navigation ("play Breaking Bad" -> "Which Season" -> "Season 3") etc~~
-* Music
-* Amazon Instant Video Streaming
+* (1/2 done) Create Generalized Addon navigator
+* Music (Difficult as there is no unified database or naming scheme)
 * Chromecast support?
 * Logitch Harmony support
 * Media Location Priorities Setting
 
-#Known Issues
-
-* Android/Fire/OSX are untested, use at your own discretion (Boto3 and import errors sometimes)
-* "There was a Problem with expected skills response" means server crash. Please notify me.
-* Some shows starting with "the" launch incorrectly as Sports games
-* Response is sometimes out of sync with performed action
-* Users may not have up to date Schema, Can cause intent mismatches
 
