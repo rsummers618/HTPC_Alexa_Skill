@@ -113,7 +113,7 @@ def watch_netflix(title,netflixid):
     return send_response_message("Playing, " + title + ", on Netflix",title + " played on Netflix")
 
 
-def watch_movie_addon(addon,title,imdbid,netflixid):
+def watch_movie_addon(addon,title,imdbid,netflixid,tmdbid):
     #send_response_message("Playing the Movie, " + title + ", on " + addon,title + " played on " + addon)
 
     log.info('watch_movie_addon(%s, %s, %s)' % (addon['id'], title, imdbid))
@@ -123,15 +123,20 @@ def watch_movie_addon(addon,title,imdbid,netflixid):
         return True
 
     elif addon['function_type'] == '1':
-        movie_addon_type_one(*eval(addon['function_vars']))
+        return movie_addon_type_one(*eval(addon['function_vars']))
         return True
 
     return False
 
 def movie_addon_type_one(addon,addon_name,imdbid,title):
 
-    return send_response_message("Playing the Movie, " + title + ", on " + addon,title + " played on " + addon_name)
+    if imdbid == None or imdbid == -1 or imdbid == 0:
+        return False
+
+    send_response_message("Playing the Movie, " + title + ", on " + addon_name,title + " played on " + addon_name)
     sendJSONRPC('Player.Open',{'item':{"file":"plugin://"+addon+"/movie/"+imdbid+"/play"}})
+    return True
+
     
 
 
@@ -142,7 +147,10 @@ def watch_series_addon(addon,title,tvdbid,tmdbid,seasonNum,episodeNum,episode_ti
 
     log.info('watch_series_addon(%s, %s, %s, %s, %s, %s)' % (addon['id'],title,tvdbid,seasonNum,episodeNum,episode_title))
 
-    if addon['function_type'] == 'netflix' and int(netflixid) != -1:
+    if addon['function_type'] == 'netflix' and netflixid:
+
+        if int(netflixid) == -1:
+            return False
 
         watch_netflix(*eval(addon['function_vars']))
         return True
@@ -155,23 +163,23 @@ def watch_series_addon(addon,title,tvdbid,tmdbid,seasonNum,episodeNum,episode_ti
 
 
 
-def series_addon_type_one(addon,title,id,seasonNum,episodeNum,episode_title):
+def series_addon_type_one(addon,addon_name,title,id,seasonNum,episodeNum,episode_title):
 
     if seasonNum and episodeNum:
-        send_response_message("Playing, " + title + ", " + episode_title + " , on " +addon ,title + " played on " + addon)
+        send_response_message("Playing, " + title + ", " + episode_title + " , on " +addon_name ,title + " played on " + addon_name)
         sendJSONRPC('Player.Open',{'item':{"file":"plugin://"+addon+"/show/"+id+"/season/"+seasonNum+"/episode/"+episodeNum+"/play"}})
 
         return
 
     elif seasonNum:
 
-        send_response_message("Opening, " + title + ", on " + addon,title + " played on " + addon)
+        send_response_message("Opening, " + title + ", on " + addon_name,title + " played on " + addon_name)
         sendJSONRPC('GUI.ActivateWindow',{"window":"videos","parameters":["plugin://"+addon+"/show/"+id+"/season/"+seasonNum+"/episodes"]})
 
         return
 
     else:
-        send_response_message("Opening, " + title + ", on " + addon,title + " played on " + addon)
+        send_response_message("Opening, " + title + ", on " + addon_name,title + " played on " + addon_name)
         sendJSONRPC('GUI.ActivateWindow',{"window":"videos","parameters":["plugin://"+addon+"/show/"+id+"/seasons"]})
 
         return
@@ -210,6 +218,10 @@ def play_music(message_attributes):
 def play_movie(message_attributes):#(title,imdbid,netflixid):
 
     log.info("play_movie(..)")
+
+    show_tmdbid = None
+    if 'show_tmdbid' in message_attributes:
+        show_tmdbid = str(message_attributes['show_tmdbid'])
 
     try:
         title = message_attributes['title']
@@ -251,7 +263,7 @@ def play_movie(message_attributes):#(title,imdbid,netflixid):
     for addon in cfg.movie_addons:
 
         try:
-            if( watch_movie_addon(addon,title,imdbid,netflixid)):
+            if( watch_movie_addon(addon,title,imdbid,netflixid,show_tmdbid)):
                 return
 
         except Exception as e:
@@ -261,7 +273,7 @@ def play_movie(message_attributes):#(title,imdbid,netflixid):
             #return tell_response_message("There was a problem playing with " + addon, "There was a problem playing with " + addon)
 
     log.info("\tmovie source not found. exiting")
-    return tell_response_message("Couldn't find a source", "Couldn't find a source")
+    return tell_response_message("I Couldn't find a source for " + title, "Couldn't find a source for " + title)
 
 def play_local_movie(movieid):
     sendJSONRPC("Playlist.Clear", {"playlistid": 1})
@@ -384,7 +396,7 @@ def play_series(message_attributes):
             #return tell_response_message("There was a problem playing with " + addon, "There was a problem playing with " + addon)
 
     log.info("\tepisode source not found. exiting")
-    return tell_response_message("Couldn't find a source", "Couldn't find a source")
+    return tell_response_message("I Couldn't find a source for " + title,"I Couldn't find a source for " + title)
 
 
 def play_random_movie():
@@ -401,12 +413,17 @@ def play_sports(message_attributes):
         #plugin://plugin.video.prosport/?away=Cleveland%20Cavaliers&home=Charlotte%20Hornets&mode=STREAMS&url=https%3a%2f%2fwww.reddit.com%2fr%2fnbastreams
         if addon['function_type'] == '1':
             send_response_message("Ok","OK")
-            sendJSONRPC('GUI.ActivateWindow',{"window":"videos","parameters":["plugin://"+addon['id']+"?away="+message_attributes['away']+"&home="+message_attributes['home']+"&mode=STREAMS&url=https%3a%2f%2fwww.reddit.com%2fr%2f"+message_attributes['mode']+"streams"]})
+            sendJSONRPC('GUI.ActivateWindow',{"window":"videos","parameters":["plugin://"+addon['id']+"?away="+message_attributes['away']+"&home="+message_attributes['home']+"&mode=prostreams&url=" +message_attributes['mode']]})
+            time.sleep(0.5)
+            menu_down()
+            time.sleep(0.2)
+            menu_select()
         elif addon['function_type'] == '2':
             send_response_message("Ok","OK")
         #print("acton finished finally...")
         elif addon['function_type'] == 'web':
             send_response_message("Ok","OK")
+    return tell_response_message("I Couldn't find a source for " + message_attributes['away'] + " at " +  message_attributes['home'] , "I Couldn't find a source for " + message_attributes['away'] + " at " +  message_attributes['home'])
 
 def play_internet_stream(message_attributes):
 

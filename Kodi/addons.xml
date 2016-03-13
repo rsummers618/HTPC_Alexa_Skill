@@ -13,7 +13,7 @@
 	</extension>
 </addon>
 
-<addon id="script.service.alexa" name="Alexa Plugin" version="0.1.1" provider-name="rsummers618">
+<addon id="script.service.alexa" name="Alexa Plugin" version="0.1.2" provider-name="rsummers618">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.simplejson" />
@@ -21,8 +21,8 @@
   <extension point="xbmc.service" library="service.py" start="login"/>
   <extension point="xbmc.addon.metadata">
     <summary lang="en_gb">Background service to allow Kodi to be controlled by your Amazon Echo</summary>
-    <description lang="en_gb">This script provides a backend that can be communicated to by the Alexa webservice.</description>
-    <disclaimer lang="en_gb"> This is in Alpha stage</disclaimer>
+    <description lang="en_gb">This script provides a client that can be communicated to by the Alexa webservice.</description>
+    <disclaimer lang="en_gb"> This is in Beta stage</disclaimer>
     <language></language>
     <platform>all</platform>
     <license></license>

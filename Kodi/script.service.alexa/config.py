@@ -73,7 +73,7 @@ def setup_addons(root):
             enabled_string = category.attrib['type'] + '_' + addon.attrib['name']
             enabled = ADDON.getSetting(enabled_string)
 
-            if addon_id in enabled_addons and enabled:
+            if addon_id in enabled_addons and enabled == 'true':
                 if category.attrib['type'] == 'series':
                     cfg.series_addons.append({'name':addon.attrib['name'], 'id':addon_id,'function_type':addon.attrib['function_type'],'function_vars':addon.attrib['function_vars']})
                 if category.attrib['type'] == 'movies':

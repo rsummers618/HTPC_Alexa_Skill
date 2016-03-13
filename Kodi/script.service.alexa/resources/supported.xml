@@ -2,32 +2,33 @@
 <plugins>
     <catergory type="series">
         <addon type="website"  prefix="video" name="netflix" function_type="netflix" function_vars="title,netflixid" invocation_name="netflix"/>
-        <addon type="website"  prefix="video" name="amazon prime" function_type="primevideo" function_vars="title,amazonprimeid" invocation_name="Amazon Prime"/>
-        <addon type="plugin"  prefix="video" name="quasar" function_type="1" function_vars="addon['id'],title,tmdbid,seasonNum,episodeNum,episode_title" invocation_name="quasar"/>
-        <addon type="plugin"  prefix="video" name="pulsar" function_type="1" function_vars="addon['id'],title,tvdbid,seasonNum,episodeNum,episode_title" invocation_name="pulsar"/>
+        <!--<addon type="website"  prefix="video" name="amazon prime" function_type="primevideo" function_vars="title,amazonprimeid" invocation_name="Amazon Prime"/>-->
+        <addon type="plugin"  prefix="video" name="quasar" function_type="1" function_vars="addon['id'],addon['name'],title,tmdbid,seasonNum,episodeNum,episode_title" invocation_name="quasar"/>
+        <addon type="plugin"  prefix="video" name="pulsar" function_type="1" function_vars="addon['id'],addon['name'],title,tvdbid,seasonNum,episodeNum,episode_title" invocation_name="pulsar"/>
 
     </catergory>
     <catergory type="movies">
         <addon type="website"  prefix="video" name="netflix" function_type="netflix" function_vars="title,netflixid" invocation_name="netflix"/>
-        <addon type="website"  prefix="video" name="amazon prime" function_type="primevideo" function_vars="title,amazonprimeid" invocation_name="Amazon Prime"/>
-        <addon type="plugin"  prefix="video" name="quasar" function_type="1" function_vars="addon['id'],addon['name'],imdbid,title" invocation_name="quasar"/>
+        <!--<addon type="website"  prefix="video" name="amazon prime" function_type="primevideo" function_vars="title,amazonprimeid" invocation_name="Amazon Prime"/>-->
+        <addon type="plugin"  prefix="video" name="quasar" function_type="1" function_vars="addon['id'],addon['name'],tmdbid,title" invocation_name="quasar"/>
+        <addon type="plugin"  prefix="video" name="pulsar" function_type="1" function_vars="addon['id'],addon['name'],imdbid,title" invocation_name="pulsar"/>
 
     </catergory>
     <catergory type="music">
-        <addon type="plugin"  prefix="audio" name="pandoki" function_type="1" function_vars="name" invocation_name="pandora"/>
-        <addon type="plugin"  prefix="audio" name="googlemusic" function_type="1" function_vars="name" invocation_name="google play"/>
+        <!--<addon type="plugin"  prefix="audio" name="pandoki" function_type="1" function_vars="name" invocation_name="pandora"/>-->
+        <!--<addon type="plugin"  prefix="audio" name="googlemusic" function_type="1" function_vars="name" invocation_name="google play"/>-->
     </catergory>
 
 
     <catergory type="live">
-        <addon type="plugin"  prefix="video" name="hdhomerun" function_type="1" function_vars="channel" invocation_name="HD home run"/>
+        <!--<addon type="plugin"  prefix="video" name="hdhomerun" function_type="1" function_vars="channel" invocation_name="HD home run"/>-->
     </catergory>
     <catergory type="sports">
         <addon type="plugin"  prefix="video" name="prosport" function_type="1" function_vars="home,away,league" invocation_name="prosport"/>
-        <addon type="plugin"  prefix="video" name="espn_3" function_type="2" function_vars="link" invocation_name="ESPN3"/>
-        <addon type="website"  prefix="video" name="Espn - Chrome" function_type="web" function_vars="keyword" invocation_name="ESPN"/>
-        <addon type="website"  prefix="video" name="Fox Sports - Chrome" function_type="web" function_vars="keyword" invocation_name="Fox Sports"/>
-        <addon type="website"  prefix="video" name="ABC - Chrome" function_type="web" function_vars="keyword" invocation_name="ABC"/>
+        <!--<addon type="plugin"  prefix="video" name="espn_3" function_type="2" function_vars="link" invocation_name="ESPN3"/>-->
+        <!--<addon type="website"  prefix="video" name="Espn - Chrome" function_type="web" function_vars="keyword" invocation_name="ESPN"/>-->
+        <!--<addon type="website"  prefix="video" name="Fox Sports - Chrome" function_type="web" function_vars="keyword" invocation_name="Fox Sports"/>-->
+        <!--<addon type="website"  prefix="video" name="ABC - Chrome" function_type="web" function_vars="keyword" invocation_name="ABC"/>-->
     </catergory>
 
 

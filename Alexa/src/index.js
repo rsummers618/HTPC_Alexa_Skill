@@ -174,42 +174,44 @@ function GetIMDBID(input_title,callback){
         if (err){
             console.log(err)
             console.log(err.stack)
-            return callback(err)
+            //return callback(err)
         }
 
-        console.log(stringbody)
+        if (stringbody){
+            var body = JSON.parse(stringbody)
+             if (body.Response == "True"){
+                try{
+                    var imdbid = body.imdbID
+                    var year = body.Year
+                    year = year.substring(0,4)
+                    year = year.split('–')[0]
+                    var series = false
+                    var title = body.Title
+                    if (body.Type=="series"){
+                        series = true
+                    }
+                    return callback(err,imdbid,year,series,title)
+                }
+                catch(e){
+                    console.log(e)
+                }
 
-        var body = JSON.parse(stringbody)
-        if (body.Response == "False"){
-			console.log("OMDB search failed, Trying Google")
-            API_Search.lookup(input_title, function(err,imdbid,series,year,title){
-                if (err){
-                    return callback(err)
-                }
-				console.log("Google search returned: IMDBID: " + imdbid + " Year:" + year + " Title:" + title + " Series:" + series)
-                return callback(err,imdbid,year,series,title)
-            
-            });
-            //response.tellWithCard(intent.slots.MediaName.value + " Not found on IMDB", AppName, "Media not found");
+
+
+             }
         }
-        else{
-			try{
-				var imdbid = body.imdbID
-				var year = body.Year
-				year = year.substring(0,4)
-				year = year.split('–')[0]
-				var series = false
-				var title = body.Title
-				if (body.Type=="series"){
-					series = true
-                }
-			}
-			catch(e){
-				return callback(e)
-			}
-            
+
+        console.log("OMDB search failed, Trying Google")
+        API_Search.lookup(input_title, function(err,imdbid,series,year,title){
+            if (err){
+                return callback(err)
+            }
+	        console.log("Google search returned: IMDBID: " + imdbid + " Year:" + year + " Title:" + title + " Series:" + series)
             return callback(err,imdbid,year,series,title)
-        }
+
+        });
+
+
     });
 }
 
@@ -333,7 +335,7 @@ PlayTV.prototype.intentHandlers = {
         
         GetIMDBID(intent.slots.MediaName.value, function(err,imdbid,year,series,title){
             if (err){
-                return response.tellWithCard( err, AppName, err);
+                return response.tellWithCard( "Sorry, Media Lookup timed out", AppName, "IMDB Timeout");
             }
 			try{
 			    media.imdbid = imdbid
@@ -351,8 +353,10 @@ PlayTV.prototype.intentHandlers = {
 			}
 
 
-            numDone = 2;
+
             if (series){
+
+                numDone = 2;
                 console.log("This is a series")
                 var tvdb = new TVDB(TVDBAPI)
                 //tvdbRequestString = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid="+imdbid
@@ -366,7 +370,7 @@ PlayTV.prototype.intentHandlers = {
                     
                     //// INSERTING HERE
                     media.show_tvdbid = res.id
-                    return done()
+                    return done_TV()
                     //return SelectEpisode(queue_id,response, session,media)
                 });
 
@@ -385,11 +389,11 @@ PlayTV.prototype.intentHandlers = {
                     }else{
                         console.log("MOVIE DB: NOT FOUND")
                     }
-                    return done()
+                    return done_TV()
                     //return SelectEpisode(queue_id,response, session,imdbid,media)
                 });
 
-                function done(){
+                function done_TV(){
                     numDone = numDone -1
                     if (numDone <= 0){
                         return SelectEpisode(queue_id,response, session,media)
@@ -400,17 +404,44 @@ PlayTV.prototype.intentHandlers = {
             else{
                 console.log("This is a movie")
                 media.year = year.split('-')[0]
-
                 console.log("year: " + year)
 
+                numDone = 2
                 API_Search.netflixSearch(title,year,'1',function(err,netflixid){
                     if (err){
                         response.tellWithCard(title + " " + err, AppName, err);
                     }
                     media.netflixid = netflixid
                     console.log(netflixid)
-                    return sendMediaToQueue(session,response,media)
+                    return done_movie()
+
                 });
+
+                var mdb =  MovieDB
+                mdb.find({id:imdbid,external_source:'imdb_id'}, function(err,res){
+                    if (err){
+                        return response.tellWithCard(title + " " + err, AppName, err);
+                    }
+                    if (!res){
+
+                        return response.tellWithCard("Couldn't Contact The MovieDB, try again later", AppName, "Error contacting TheMovieDB");
+                    }
+                    if (res.movie_results.length > 0){
+
+                        console.log("MOVIE DB: " + res.movie_results[0].id)
+                        media.show_tmdbid = res.movie_results[0].id
+                    }else{
+                        console.log("MOVIE DB: NOT FOUND")
+                    }
+                    return done_movie()
+                });
+
+                function done_movie(){
+                    numDone = numDone -1
+                    if (numDone <= 0){
+                        return sendMediaToQueue(session,response,media)
+                    }
+                }
             }
             
             
