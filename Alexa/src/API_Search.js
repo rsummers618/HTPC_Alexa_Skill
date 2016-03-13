@@ -235,12 +235,14 @@ function netflixSearch(title,year,seriesIdx,callback2){
             //console.log(html);
             $('div.iw-title').each(function(i,element){//.attr('data-title-path')
                 response = $(this).attr('data-title-path')
-                response = response.substring(7,16)
-                //console.log($(this).child().text())
-                console.log(response);
-                if (NetflixFound == false){
-                    NetflixFound = true
-                    return callback2(error,response)
+                if(response){
+                    response = response.substring(7,16)
+                    //console.log($(this).child().text())
+                    console.log(response);
+                    if (NetflixFound == false){
+                        NetflixFound = true
+                        return callback2(error,response)
+                    }
                 }
                 
             })
