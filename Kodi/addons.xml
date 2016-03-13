@@ -13,7 +13,7 @@
 	</extension>
 </addon>
 
-<addon id="script.service.alexa" name="Alexa Plugin" version="0.1.0" provider-name="rsummers618">
+<addon id="script.service.alexa" name="Alexa Plugin" version="0.1.1" provider-name="rsummers618">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
     <import addon="script.module.simplejson" />

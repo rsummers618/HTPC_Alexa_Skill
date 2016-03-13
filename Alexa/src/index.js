@@ -32,6 +32,8 @@ process.on('uncaughtException', function (err) {
 
 console.log("starting")
 
+var AppName = "ARK"
+
 
 
 //var socket_host = 'localhost'
@@ -140,13 +142,20 @@ function SendMessageAndAwaitResponse(session,response,message_body,message_attri
             clearTimeout(timeoutProtect)
             console.log("Response received")
             console.log(data.message)
+            if(data.message.type){
+                if (data.message.type == 'ask'){
+                    return response.ask(data.message.MessageAttributes.voice)
+                }
+            }
 
-            if (data.message.type == 'ask'){
-                return response.ask(data.message.MessageAttributes.voice)
+            console.log(data)
+            try{
+                return response.tellWithCard(data.message.voice,AppName,data.message.card);
             }
-            else{
-                return response.tellWithCard(data.message.voice,"TV Player",data.message.card);
+            catch(e){
+                return response.tellWithCard("Please Update your alexa service",AppName,"Update your service");
             }
+
             //return callback (false,data.message)
 
         });
@@ -181,7 +190,7 @@ function GetIMDBID(input_title,callback){
                 return callback(err,imdbid,year,series,title)
             
             });
-            //response.tellWithCard(intent.slots.MediaName.value + " Not found on IMDB", "TV player", "Media not found");
+            //response.tellWithCard(intent.slots.MediaName.value + " Not found on IMDB", AppName, "Media not found");
         }
         else{
 			try{
@@ -230,7 +239,7 @@ function SelectEpisode(queue_id,response,session,media){
     tvdb.getEpisodesById(media.show_tvdbid, function(error, res){
         if (error){
             console.log(error)
-            response.tellWithCard(media.title + " " + error, "TV player", error);
+            response.tellWithCard(media.title + " " + error, AppName, error);
         }
 
         //console.log(res)
@@ -247,7 +256,7 @@ function SelectEpisode(queue_id,response,session,media){
 
                 API_Search.netflixSearch(media.title + ' ' + media.episodeTitle,media.year,'4',function(err,netflixid){
                     if (err){
-                        response.tellWithCard(title + " " + err, "TV player", err);
+                        response.tellWithCard(title + " " + err, AppName, err);
                     }
                     media.netflixid = netflixid
                     console.log(netflixid)
@@ -257,7 +266,7 @@ function SelectEpisode(queue_id,response,session,media){
         
         }
         if (found == false){
-             return response.tellWithCard(" I couldn't find Episode " + episodeNum, "TV player", "Couldn't find Episode");
+             return response.tellWithCard(" I couldn't find Episode " + episodeNum, AppName, "Couldn't find Episode");
         }
         
         
@@ -279,13 +288,13 @@ function sendMediaToQueue(session,response,media){
     SendMessageAndAwaitResponse(session,response,message_body,media,function(err,res){
         if (err){
             console.log(res)
-            response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
+            response.tellWithCard("Couldn't communicate with the TV", AppName, "Couldn't communicate with TV");
             return console.error(err.message);
         }
 
         console.log(res.MessageAttributes)
-        response.tellWithCard(res.MessageAttributes.voice,"TV Player",res.MessageAttributes.card);
-        //response.tellWithCard(retval.result.voice,"TV Player",retval.result.card);
+        response.tellWithCard(res.MessageAttributes.voice,AppName,res.MessageAttributes.card);
+        //response.tellWithCard(retval.result.voice,AppName,retval.result.card);
 
     });
     
@@ -299,7 +308,7 @@ PlayTV.prototype.intentHandlers = {
     
     "GetKeyIntent":function(intent,session,response){
         queue_id = session.user.userId.substring(60)
-        response.tellWithCard("I've sent your key to your Alexa app, Please enter this into Kodi", "TV player",queue_id);
+        response.tellWithCard("I've sent your key to your Alexa app, Please enter this into Kodi", AppName,queue_id);
 
     },
     
@@ -324,7 +333,7 @@ PlayTV.prototype.intentHandlers = {
         
         GetIMDBID(intent.slots.MediaName.value, function(err,imdbid,year,series,title){
             if (err){
-                return response.tellWithCard( err, "TV player", err);
+                return response.tellWithCard( err, AppName, err);
             }
 			try{
 			    media.imdbid = imdbid
@@ -338,7 +347,7 @@ PlayTV.prototype.intentHandlers = {
 
 			}
 			catch(e){
-				return response.tellWithCard(e,"TV Player",e)
+				return response.tellWithCard(e,AppName,e)
 			}
 
 
@@ -349,10 +358,10 @@ PlayTV.prototype.intentHandlers = {
                 //tvdbRequestString = "http://www.thetvdb.com/api/GetSeriesByRemoteID.php?imdbid="+imdbid
                 tvdb.getSeriesByRemoteId(imdbid,function(error,res){
                     if (error){
-                        return response.tellWithCard(title + " " + err, "TV player", err);
+                        return response.tellWithCard(title + " " + err, AppName, err);
                     }
                     if (!res){
-                        return response.tellWithCard("Couldn't Contact TVDB, try again later", "TV player", "Error contacting TVDB");
+                        return response.tellWithCard("Couldn't Contact TVDB, try again later", AppName, "Error contacting TVDB");
                     }
                     
                     //// INSERTING HERE
@@ -364,11 +373,11 @@ PlayTV.prototype.intentHandlers = {
                 var mdb =  MovieDB
                 mdb.find({id:imdbid,external_source:'imdb_id'}, function(err,res){
                     if (err){
-                        return response.tellWithCard(title + " " + err, "TV player", err);
+                        return response.tellWithCard(title + " " + err, AppName, err);
                     }
                     if (!res){
 
-                        return response.tellWithCard("Couldn't Contact The MovieDB, try again later", "TV player", "Error contacting TheMovieDB");
+                        return response.tellWithCard("Couldn't Contact The MovieDB, try again later", AppName, "Error contacting TheMovieDB");
                     }
                     if (res.tv_results.length > 0){
                         console.log("MOVIE DB: " + res.tv_results[0].id)
@@ -396,7 +405,7 @@ PlayTV.prototype.intentHandlers = {
 
                 API_Search.netflixSearch(title,year,'1',function(err,netflixid){
                     if (err){
-                        response.tellWithCard(title + " " + err, "TV player", err);
+                        response.tellWithCard(title + " " + err, AppName, err);
                     }
                     media.netflixid = netflixid
                     console.log(netflixid)
@@ -422,12 +431,12 @@ PlayTV.prototype.intentHandlers = {
         
         SendMessageAndAwaitResponse(session,response,message_body,message_attributes,function(err,res){
             if (err){
-                response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
+                response.tellWithCard("Couldn't communicate with the TV", AppName, "Couldn't communicate with TV");
                 return console.error(err.message);
             }
 
 
-            response.tellWithCard("Playing someone on pandora","TV Player","Playing something on pandora");
+            response.tellWithCard("Playing someone on pandora",AppName,"Playing something on pandora");
         });
     
     },
@@ -438,12 +447,12 @@ PlayTV.prototype.intentHandlers = {
         try{
             if(!intent.slots.ShowName.value){
                 console.error("No show specified");
-                return response.tellWithCard("You Must specify a show", "TV player", "No show named, New Episodes");
+                return response.tellWithCard("You Must specify a show", AppName, "No show named, New Episodes");
             }
         }
         catch(e){
            console.error(e);
-           return response.tellWithCard("You Must specify a show", "TV player", "No show named, New Episodes");
+           return response.tellWithCard("You Must specify a show", AppName, "No show named, New Episodes");
         }
         message_attributes = {
             show:intent.slots.ShowName.value
@@ -454,17 +463,17 @@ PlayTV.prototype.intentHandlers = {
         SendMessageAndAwaitResponse(session,response,message_body,message_attributes,function(err,res){
             if (err){
                 console.error(err.message);
-                return response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
+                return response.tellWithCard("Couldn't communicate with the TV", AppName, "Couldn't communicate with TV");
                 
             }
-            return response.tellWithCard(res.MessageAttributes.voice,"TV Player",res.MessageAttributes.card);
+            return response.tellWithCard(res.MessageAttributes.voice,AppName,res.MessageAttributes.card);
             
 
         });
         }
     catch(e){
         console.error(e);
-        return response.tellWithCard("Error getting recent shows", "TV player", "Error getting recent episodes");
+        return response.tellWithCard("Error getting recent shows", AppName, "Error getting recent episodes");
     }
         
     
@@ -481,10 +490,10 @@ PlayTV.prototype.intentHandlers = {
 
         SendMessageAndAwaitResponse(session,response,message_body,message_attributes,function(err,res){
             if (err){
-                response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
+                response.tellWithCard("Couldn't communicate with the TV", AppName, "Couldn't communicate with TV");
                 return console.error(err.message);
             }
-            response.tellWithCard(res.MessageAttributes.voice,"TV Player",res.MessageAttributes.card);
+            response.tellWithCard(res.MessageAttributes.voice,AppName,res.MessageAttributes.card);
             
 
         });
@@ -520,7 +529,7 @@ PlayTV.prototype.intentHandlers = {
     
     "OpenAddonIntent": function (intent, session, response) {
         
-        response.tellWithCard("Opening addons is not yet implemented","TV Player","Not yet implemented");
+        response.tellWithCard("Opening addons is not yet implemented",AppName,"Not yet implemented");
         return
     },
     
@@ -534,10 +543,10 @@ PlayTV.prototype.intentHandlers = {
 
         SendMessageAndAwaitResponse(session,response,message_body,message_attributes,function(err,res){
             if (err){
-                response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
+                response.tellWithCard("Couldn't communicate with the TV", AppName, "Couldn't communicate with TV");
                 return console.error(err.message);
             }
-            response.tellWithCard(res.MessageAttributes.voice,"TV Player",res.MessageAttributes.card);
+            response.tellWithCard(res.MessageAttributes.voice,AppName,res.MessageAttributes.card);
             
 
         });
@@ -553,10 +562,10 @@ PlayTV.prototype.intentHandlers = {
 
         SendMessageAndAwaitResponse(session,response,message_body,message_attributes,function(err,res){
             if (err){
-                response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
+                response.tellWithCard("Couldn't communicate with the TV", AppName, "Couldn't communicate with TV");
                 return console.error(err.message);
             }
-            response.tellWithCard(res.MessageAttributes.voice,"TV Player",res.MessageAttributes.card);
+            response.tellWithCard(res.MessageAttributes.voice,AppName,res.MessageAttributes.card);
             
 
         });
@@ -571,10 +580,10 @@ PlayTV.prototype.intentHandlers = {
 
         SendMessageAndAwaitResponse(session,response,message_body,message_attributes,function(err,res){
             if (err){
-                response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
+                response.tellWithCard("Couldn't communicate with the TV", AppName, "Couldn't communicate with TV");
                 return console.error(err.message);
             }
-            response.tellWithCard(res.MessageAttributes.voice,"TV Player",res.MessageAttributes.card);
+            response.tellWithCard(res.MessageAttributes.voice,AppName,res.MessageAttributes.card);
             
 
         });
@@ -588,10 +597,10 @@ PlayTV.prototype.intentHandlers = {
 
         SendMessageAndAwaitResponse(session,response,message_body,message_attributes,function(err,res){
             if (err){
-                response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
+                response.tellWithCard("Couldn't communicate with the TV", AppName, "Couldn't communicate with TV");
                 return console.error(err.message);
             }
-            response.tellWithCard(res.MessageAttributes.voice,"TV Player",res.MessageAttributes.card);
+            response.tellWithCard(res.MessageAttributes.voice,AppName,res.MessageAttributes.card);
             
 
         });
@@ -620,7 +629,7 @@ PlayTV.prototype.intentHandlers = {
         
         SendMessageAndAwaitResponse(session,response,message_body,message_attributes,function(err,res){
             if (err){
-                response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
+                response.tellWithCard("Couldn't communicate with the TV", AppName, "Couldn't communicate with TV");
                 return console.error(err.message);
             }
             return response.ask(res.MessageAttributes.voice,res.MessageAttributes.card);
@@ -658,10 +667,10 @@ PlayTV.prototype.intentHandlers = {
 
         SendMessageAndAwaitResponse(session,response,message_body,message_attributes,function(err,res){
             if (err){
-                response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
+                response.tellWithCard("Couldn't communicate with the TV", AppName, "Couldn't communicate with TV");
                 return console.error(err.message);
             }
-            response.tellWithCard(res.MessageAttributes.voice,"TV Player",res.MessageAttributes.card);
+            response.tellWithCard(res.MessageAttributes.voice,AppName,res.MessageAttributes.card);
 
         });
     
@@ -746,12 +755,12 @@ PlayTV.prototype.intentHandlers = {
         function sendteam(gamedata){
             SendMessageAndAwaitResponse(session,response,'sports',gamedata,function(err,res){
             if (err){
-                response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
+                response.tellWithCard("Couldn't communicate with the TV", AppName, "Couldn't communicate with TV");
                 return console.error(err.message);
             }
             //ResponseTitle = ThreadTitle.replace(/Game Thread\:/gi,"")
             //ResponseTitle = ResponseTitle.replace(/\[request\]/gi,"")
-            response.tellWithCard("Playing " + gamedata.away + ' at ' + gamedata.home,"TV Player","Playing " + gamedata.away + ' at ' + gamedata.home);
+            response.tellWithCard("Playing " + gamedata.away + ' at ' + gamedata.home,AppName,"Playing " + gamedata.away + ' at ' + gamedata.home);
 
             return
 
@@ -781,7 +790,7 @@ PlayTV.prototype.intentHandlers = {
             console.log(callback_counter)
             
             if (callback_counter <= 0){
-                response.tellWithCard("I Couldn't Find a game by the team " + intent.slots.MediaName.value,"TV Player","I Couldn't Find a game by the team " + intent.slots.MediaName.value);
+                response.tellWithCard("I Couldn't Find a game by the team " + intent.slots.MediaName.value,AppName,"I Couldn't Find a game by the team " + intent.slots.MediaName.value);
             }
         }
         
@@ -791,7 +800,7 @@ PlayTV.prototype.intentHandlers = {
         for(var i in subreddit_list){
             reddit('/r/'+subreddit_list[i]+'/hot').get({limit:15}
             ).catch(function(e){
-                response.tellWithCard("Error: "+e,"TV player", "Error: "+e);
+                response.tellWithCard("Error: "+e,AppName, "Error: "+e);
             }).then(function(res){
             
                 for (var j in res.data.children){
@@ -802,7 +811,7 @@ PlayTV.prototype.intentHandlers = {
                         callback_counter ++
                         reddit(res.data.children[j].data.permalink).get({limit:15}
                         ).catch(function(e){
-                            response.tellWithCard("Error: "+e,"TV player", "Error: "+e);
+                            response.tellWithCard("Error: "+e,AppName, "Error: "+e);
                         }).then(function(comments){
          
                         
@@ -846,12 +855,12 @@ PlayTV.prototype.intentHandlers = {
                             message_body = "sports"
                             SendMessageAndAwaitResponse(queue_id,message_body,message_attributes,function(err,res){ 
                                 if (err){
-                                    response.tellWithCard("Couldn't communicate with the TV", "TV player", "Couldn't communicate with TV");
+                                    response.tellWithCard("Couldn't communicate with the TV", AppName, "Couldn't communicate with TV");
                                     return console.error(err.message);
                                 }
                                 ResponseTitle = ThreadTitle.replace(/Game Thread\:/gi,"")
                                 ResponseTitle = ResponseTitle.replace(/\[request\]/gi,"")
-                                response.tellWithCard("Playing " + ResponseTitle,"TV Player","Playing " + ResponseTitle);
+                                response.tellWithCard("Playing " + ResponseTitle,AppName,"Playing " + ResponseTitle);
                                 
                                 return
                                     

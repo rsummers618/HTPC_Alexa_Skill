@@ -130,8 +130,9 @@ def watch_movie_addon(addon,title,imdbid,netflixid):
 
 def movie_addon_type_one(addon,addon_name,imdbid,title):
 
-    sendJSONRPC('Player.Open',{'item':{"file":"plugin://"+addon+"/movie/"+imdbid+"/play"}})
     return send_response_message("Playing the Movie, " + title + ", on " + addon,title + " played on " + addon_name)
+    sendJSONRPC('Player.Open',{'item':{"file":"plugin://"+addon+"/movie/"+imdbid+"/play"}})
+    
 
 
 
@@ -197,9 +198,10 @@ def play_pause(message_attributes):
     send_response_message("Ok","Kodi Pause/Resumed")
     
 def stop(message_attributes):
+    send_response_message("Ok","Kodi Stopped")
     log.info("stop(..)")
     sendJSONRPC("Player.Stop", {"playerid":GetPlayerID()})
-    send_response_message("Ok","Kodi Stopped")
+    
 
 def play_music(message_attributes):
     return
