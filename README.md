@@ -63,12 +63,6 @@ This skill is not yet published by Amazon, so you must create a developer accoun
 
 Thats it.
 
-# PreRequisites
-
-  App currently expects ChromeLauncher and Pulsar Addons for Kodi.
-  
-  Will remove these dependencies and detect dynamically soon
-
 #ToDo
 
 Currently in Beta Stage
