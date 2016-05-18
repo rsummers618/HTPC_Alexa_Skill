@@ -1,7 +1,12 @@
+Development on this project has largely stopped.  Controlling local Kodi media is possible, but the maintainting of addons is too difficult.
+
+Due to the large difficulty of keeping addons up to date, development on a new project for android/androidtv/firetv will be stared, which will interface directly with APPS for these platforms, which are much more stable than kodi addons.
+
+Expect the new project to be up in the coming weeks, and have this project integrated into it.
+
 # HTPC_Alexa_Skill
 
 This is an Alexa skill which allows you to control media on your Kodi Media Center
-
 
 # Supported Speech Patterns
 
